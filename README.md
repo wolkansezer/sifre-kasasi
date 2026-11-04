@@ -7,11 +7,18 @@ Tarayıcıda çalışan, tek dosyalık, kurulum gerektirmeyen kişisel şifre ka
 
 **Hemen dene:** https://wolkansezer.github.io/sifre-kasasi/
 
-<p align="center">
-  <img src="docs/kilit.png" width="280" alt="Kilit ekranı">
-  &nbsp;&nbsp;
-  <img src="docs/kasa.png" width="280" alt="Kasa ekranı (örnek verilerle)">
-</p>
+<table align="center">
+  <tr>
+    <th colspan="2">🇹🇷 Türkçe</th>
+    <th colspan="2">🇬🇧 English</th>
+  </tr>
+  <tr>
+    <td><img src="docs/kilit.png" width="200" alt="Kilit ekranı"></td>
+    <td><img src="docs/kasa.png" width="200" alt="Kasa ekranı (örnek verilerle)"></td>
+    <td><img src="docs/lock-en.png" width="200" alt="Lock screen"></td>
+    <td><img src="docs/vault-en.png" width="200" alt="Vault screen (sample data)"></td>
+  </tr>
+</table>
 
 <sub>Ekran görüntülerindeki kayıtlar örnektir.</sub>
 
