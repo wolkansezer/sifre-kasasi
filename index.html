@@ -60,7 +60,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:12px
 /* Kasa ekranı */
 header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;background:var(--bg);padding:12px 0 10px}
 .topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.topbar h2{font-size:18px;margin:0;flex:1;min-width:120px}
+.topbar h2{font-size:18px;margin:0;flex:1;min-width:0}
 .badge{font-size:12px;padding:3px 8px;border-radius:99px;background:var(--panel2);color:var(--muted);margin-left:6px;vertical-align:middle}
 .badge.dirty{background:#3a2d0f;color:var(--warn)}
 #saveBtn.dirty{background:var(--warn);color:#2a1d00;border-color:var(--warn);font-weight:650}
@@ -73,6 +73,7 @@ header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;backgroun
 .meta span{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .acts{display:flex;gap:6px;flex:none}
 .empty{text-align:center;color:var(--muted);padding:40px 10px}
+.langBtn{white-space:nowrap;flex:none}
 .menu{position:relative}
 .menu .dd{position:absolute;right:0;top:calc(100% + 6px);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;min-width:230px;box-shadow:0 10px 30px #0008;z-index:10}
 .menu .dd button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:10px 12px}
@@ -101,7 +102,7 @@ header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;backgroun
 
   <!-- ============ KİLİT EKRANI ============ -->
   <section id="lock" class="card">
-    <div class="logo"><div class="ic">🔐</div><div><h1>Şifre Kasası</h1><div class="muted small">AES-256 · cihazında şifrelenir</div></div></div>
+    <div class="logo"><div class="ic">🔐</div><div><h1>Şifre Kasası</h1><div class="muted small">AES-256 · cihazında şifrelenir</div></div><button class="small ghost langBtn" style="margin-left:auto">🌐 English</button></div>
 
     <div class="tabs">
       <button id="tabOpen" class="on">Kasayı aç</button>
@@ -127,7 +128,7 @@ header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;backgroun
       <div class="strength"><i id="newStr"></i></div>
       <label>Ana şifre (tekrar)</label>
       <input id="newPw2" type="password" autocomplete="new-password">
-      <div class="notice">⚠️ Ana şifreni unutursan kasayı açmanın <b>hiçbir yolu yoktur</b>. Kâğıda yazıp güvenli bir yerde sakla.</div>
+      <div class="notice">⚠️ Ana şifreni unutursan kasayı açmanın hiçbir yolu yoktur. Kâğıda yazıp güvenli bir yerde sakla.</div>
       <button id="createBtn" class="primary full">Kasayı oluştur</button>
     </div>
 
@@ -152,6 +153,7 @@ header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;backgroun
             <button data-act="csv">📥 CSV içe aktar (Chrome vb.)</button>
             <button data-act="copyblob">📋 Şifreli metni kopyala</button>
             <button data-act="chpw">🔑 Ana şifreyi değiştir</button>
+            <button class="langBtn">🌐 English</button>
             <button data-act="lock">🔒 Kilitle</button>
           </div>
         </div>
@@ -345,8 +347,8 @@ function render(){
   $('#list').innerHTML=items.map(e=>{
     const t=e.title||e.url||'(başlıksız)';
     return `<div class="item" data-id="${esc(e.id)}">
-      <div class="av" style="background:${colorFor(t)}">${esc(t.trim()[0]?.toLocaleUpperCase('tr')||'?')}</div>
-      <div class="meta" data-act="edit"><b>${esc(t)}</b><span>${esc(e.user||e.url||'')}</span></div>
+      <div class="av" data-raw style="background:${colorFor(t)}">${esc(t.trim()[0]?.toLocaleUpperCase('tr')||'?')}</div>
+      <div class="meta" data-act="edit" data-raw><b>${esc(t)}</b><span>${esc(e.user||e.url||'')}</span></div>
       <div class="acts">
         ${e.user?'<button class="small" data-act="cu" title="Kullanıcı adını kopyala">👤</button>':''}
         <button class="small primary" data-act="cp" title="Şifreyi kopyala">🔑 Kopyala</button>
@@ -469,6 +471,87 @@ function resetTimer(){ clearTimeout(idleT); if(S.key) idleT=setTimeout(()=>lock(
 addEventListener('beforeunload',e=>{ if(S.dirty||S.pending){ e.preventDefault(); e.returnValue=''; } });
 
 if(!window.crypto?.subtle){ $('#lockErr').textContent='Bu tarayıcı güvenli şifrelemeyi desteklemiyor. Sayfayı https adresinden ya da güncel Chrome/Safari ile aç.'; }
+
+/* ---------- dil (TR / EN) ---------- */
+const I18N = [
+  ['Şifre Kasası','Password Vault'],
+  ['AES-256 · cihazında şifrelenir','AES-256 · encrypted on your device'],
+  ['Kasayı aç','Open vault'],['Yeni kasa','New vault'],
+  ['Kasa dosyası','Vault file'],['📁 Dosya seç (kasa.json)','📁 Choose file (kasa.json)'],
+  ['Dosya yerine şifreli metni yapıştır','Paste encrypted text instead of a file'],
+  ['Ana şifre','Master password'],['Ana şifren','Your master password'],['Kilidi aç','Unlock'],
+  ['Ana şifre belirle','Set a master password'],['En az 10 karakter, uzun bir cümle olabilir','At least 10 characters, a long sentence works well'],
+  ['Ana şifre (tekrar)','Master password (again)'],
+  ['⚠️ Ana şifreni unutursan kasayı açmanın hiçbir yolu yoktur. Kâğıda yazıp güvenli bir yerde sakla.','⚠️ If you forget your master password, there is no way to open the vault. Write it down and keep it somewhere safe.'],
+  ['Kasayı oluştur','Create vault'],
+  ['Kasa kaydedilmemiş değişikliklerle kilitlendi. Değişiklikler şifreli olarak bekliyor.','The vault was locked with unsaved changes. They are kept encrypted for now.'],
+  ['Şifreli dosyayı indir','Download encrypted file'],['Yok say','Discard'],
+  ['🔐 Kasam','🔐 My vault'],['kaydedilmedi','unsaved'],['+ Yeni','+ New'],['💾 Kaydet','💾 Save'],
+  ['📥 CSV içe aktar (Chrome vb.)','📥 Import CSV (Chrome etc.)'],['📋 Şifreli metni kopyala','📋 Copy encrypted text'],
+  ['🔑 Ana şifreyi değiştir','🔑 Change master password'],['🔒 Kilitle','🔒 Lock'],
+  ['Ara: site, kullanıcı adı, not…','Search: site, username, note…'],
+  ['Yeni kayıt','New entry'],['Kaydı düzenle','Edit entry'],['Başlık','Title'],['ör. Gmail, Instagram','e.g. Gmail, Instagram'],
+  ['Web adresi','Website'],['ör. instagram.com','e.g. instagram.com'],['Kullanıcı adı / e-posta','Username / email'],
+  ['Kopyala','Copy'],['Şifre','Password'],['Uzunluk','Length'],['Semboller','Symbols'],['🎲 Üret','🎲 Generate'],
+  ['Not','Note'],['Güvenlik soruları, PIN, kurtarma kodları…','Security questions, PIN, recovery codes…'],
+  ['Sil','Delete'],['Vazgeç','Cancel'],['Tamam','Done'],
+  ['Ana şifreyi değiştir','Change master password'],['Yeni ana şifre','New master password'],['Tekrar','Again'],['Değiştir','Change'],
+  ['Emin misin?','Are you sure?'],['Evet','Yes'],
+  ['Bu bir kasa dosyası değil.','This is not a vault file.'],['Ana şifre yanlış ya da dosya bozuk.','Wrong master password or damaged file.'],
+  ['Kopyalandı · 30 sn sonra pano temizlenecek','Copied · clipboard clears in 30 s'],
+  ['Önce kasa dosyasını seç.','Choose the vault file first.'],['Ana şifreyi gir.','Enter the master password.'],
+  ['Ana şifre en az 10 karakter olmalı.','The master password must be at least 10 characters.'],
+  ['İki şifre aynı değil.','The two passwords do not match.'],['En az 10 karakter olmalı.','Must be at least 10 characters.'],
+  ['Kasa oluşturuldu. Kayıt ekleyip 💾 Kaydet’e bas.','Vault created. Add entries, then press 💾 Save.'],
+  ['İşlem yapılmadığı için kasa kilitlendi.','The vault was locked after a period of inactivity.'],
+  ['Açılıyor…','Opening…'],['Oluşturuluyor…','Creating…'],['Değiştiriliyor…','Changing…'],
+  ['Kaydedilmemiş değişiklikler silinsin mi?','Discard unsaved changes?'],
+  ['Eşleşen kayıt yok.','No matching entries.'],['Kasa boş.','The vault is empty.'],
+  ['“+ Yeni” ile ilk şifreni ekle ya da ⋯ menüsünden CSV içe aktar.','Add your first password with “+ New” or import a CSV from the ⋯ menu.'],
+  ['(başlıksız)','(untitled)'],['Kullanıcı adını kopyala','Copy username'],['Şifreyi kopyala','Copy password'],['🔑 Kopyala','🔑 Copy'],
+  ['Bir başlık ya da web adresi gir.','Enter a title or website.'],
+  ['Kaydedildi · dosyaya yazmak için 💾 Kaydet','Saved · press 💾 Save to write the file'],
+  ['Kaydetme iptal edildi.','Save cancelled.'],['Dosya kaydedilemedi. ⋯ menüsünden şifreli metni kopyala.','Could not save the file. Copy the encrypted text from the ⋯ menu.'],
+  ['Şifreli metin kopyalandı (ana şifre olmadan okunamaz).','Encrypted text copied (unreadable without the master password).'],
+  ['Kopyalanamadı.','Could not copy.'],
+  ['Ana şifre değişti. Şimdi 💾 Kaydet ve Drive’a yükle.','Master password changed. Now press 💾 Save and upload to Drive.'],
+  ['CSV boş görünüyor.','The CSV looks empty.'],['CSV’de “password” sütunu bulunamadı.','No “password” column found in the CSV.'],
+  ['Bu tarayıcı güvenli şifrelemeyi desteklemiyor. Sayfayı https adresinden ya da güncel Chrome/Safari ile aç.','This browser does not support secure encryption. Open the page over https or in an up-to-date Chrome/Safari.'],
+];
+const I18N_RX = [
+  [/^“(.*)” silinsin mi\?$/, '“$1” will be deleted. Continue?', /^“(.*)” will be deleted\. Continue\?$/, '“$1” silinsin mi?'],
+  [/^“(.*)” kaydedildi\. Drive’daki eski dosyanın yerine yükle\.$/, '“$1” saved. Upload it over the old file on Drive.', /^“(.*)” saved\. Upload it over the old file on Drive\.$/, '“$1” kaydedildi. Drive’daki eski dosyanın yerine yükle.'],
+  [/^“(.*)” indirildi\. Drive’daki eski dosyanın yerine yükle\.$/, '“$1” downloaded. Upload it over the old file on Drive.', /^“(.*)” downloaded\. Upload it over the old file on Drive\.$/, '“$1” indirildi. Drive’daki eski dosyanın yerine yükle.'],
+  [/^(\d+) kayıt içe aktarıldı\. 💾 Kaydet’i unutma, sonra CSV dosyasını sil!$/, '$1 entries imported. Don’t forget 💾 Save, then delete the CSV file!', /^(\d+) entries imported\. Don’t forget 💾 Save, then delete the CSV file!$/, '$1 kayıt içe aktarıldı. 💾 Kaydet’i unutma, sonra CSV dosyasını sil!'],
+];
+const TR2EN = new Map(I18N), EN2TR = new Map(I18N.map(([a,b])=>[b,a]));
+let LANG = 'tr';
+try{ LANG = localStorage.getItem('sk-lang') || (/^tr\b/i.test(navigator.language||'tr') ? 'tr' : 'en'); }catch(_){ LANG = /^tr\b/i.test(navigator.language||'tr') ? 'tr' : 'en'; }
+function tr(s){
+  const k=s.trim(); if(!k) return s;
+  const map = LANG==='en' ? TR2EN : EN2TR;
+  let out = map.get(k);
+  if(out===undefined){ for(const [rt,et,re,ee] of I18N_RX){ const [rx,rep] = LANG==='en' ? [rt,et] : [re,ee]; if(rx.test(k)){ out=k.replace(rx,rep); break; } } }
+  if(out===undefined) return s;
+  return s.slice(0, s.indexOf(k)) + out + s.slice(s.indexOf(k)+k.length);
+}
+function i18nNode(root){
+  if(root.nodeType===3){ const p=root.parentElement; if(p && !p.closest('[data-raw],script,style,textarea')){ const v=tr(root.nodeValue); if(v!==root.nodeValue) root.nodeValue=v; } return; }
+  if(root.nodeType!==1 || root.closest?.('[data-raw]')) return;
+  const els=[root,...root.querySelectorAll('[placeholder],[title]')];
+  for(const el of els){ for(const a of ['placeholder','title']){ const v=el.getAttribute(a); if(v){ const n=tr(v); if(n!==v) el.setAttribute(a,n); } } }
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT); let n; const list=[]; while((n=w.nextNode())) list.push(n); list.forEach(i18nNode);
+}
+function applyLang(){
+  document.documentElement.lang = LANG;
+  document.title = LANG==='en' ? 'Password Vault' : 'Şifre Kasası';
+  i18nNode(document.body);
+  document.querySelectorAll('.langBtn').forEach(b=>b.textContent = LANG==='en' ? '🌐 Türkçe' : '🌐 English');
+}
+function setLang(l){ LANG=l; try{ localStorage.setItem('sk-lang',l); }catch(_){} applyLang(); }
+new MutationObserver(ms=>{ for(const m of ms) m.addedNodes.forEach(i18nNode); }).observe(document.body,{childList:true,subtree:true});
+document.querySelectorAll('.langBtn').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); show($('#menuDd'),0); setLang(LANG==='en'?'tr':'en'); }));
+applyLang();
 </script>
 
 </body>

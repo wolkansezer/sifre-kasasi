@@ -1,7 +1,11 @@
 # 🔐 Şifre Kasası
 
+**Türkçe · [English](README.en.md)**
+
 Tarayıcıda çalışan, tek dosyalık, kurulum gerektirmeyen kişisel şifre kasası.
 Şifreler **cihazında AES-256-GCM ile şifrelenir** ve sadece senin sakladığın şifreli bir `kasa.json` dosyasında durur. Sunucu yok, hesap yok, takip yok.
+
+**Hemen dene:** https://wolkansezer.github.io/sifre-kasasi/
 
 <p align="center">
   <img src="docs/kilit.png" width="280" alt="Kilit ekranı">
@@ -27,7 +31,7 @@ Hazır şifre yöneticileri harika ama bazen tam kontrol istersin: verinin nered
 - **CSV içe aktarma**: Chrome, Edge, Bitwarden vb. dışa aktarımlarından
 - **Ana şifre değiştirme**
 - **Mobil uyumlu**: iPhone ve Android'de ana ekrana eklenebilir
-- **Türkçe arayüz**, koyu tema
+- **Türkçe ve İngilizce arayüz** (🌐 butonuyla değiştirilir), koyu tema
 
 ## Kullanım
 
@@ -68,10 +72,6 @@ Kasa dosyasının biçimi:
 > ⚠️ **Ana şifreni unutursan kasayı açmanın hiçbir yolu yoktur.** Kâğıda yazıp güvenli bir yerde sakla ve kasa dosyanın yedeğini tut.
 
 > ℹ️ Bu proje kişisel kullanım için geliştirilmiştir ve bağımsız bir güvenlik denetiminden geçmemiştir. Kritik kullanımlar için Bitwarden ya da KeePassXC gibi denetlenmiş çözümleri de değerlendir.
-
-## English
-
-**Şifre Kasası** ("Password Vault") is a single-file, zero-install, browser-based password vault. Entries are encrypted on-device with AES-256-GCM (key derived via PBKDF2-SHA256, 600k iterations) and stored only in your own encrypted `kasa.json` file, which you can keep on Google Drive, iCloud or anywhere else. No server, no account, no network access. UI is in Turkish.
 
 ## Lisans
 
