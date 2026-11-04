@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="description" content="Tarayıcıda çalışan, şifreleri cihazda AES-256-GCM ile şifreleyen tek dosyalık şifre kasası.">
+<title>Şifre Kasası</title>
+<meta name="theme-color" content="#0b0f14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Şifre Kasası">
+<style>
+:root{
+  --bg:#0b0f14;--panel:#131a22;--panel2:#1a232e;--line:#263241;
+  --text:#e6edf3;--muted:#8b98a8;--accent:#3ddc97;--accent2:#2bb67c;
+  --warn:#f5b942;--danger:#ff5d6c;--radius:14px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{min-height:100vh;padding-block:0 24px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:10;background:var(--bg)}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:10px 14px;transition:.15s}
+button:hover{border-color:#3a4a5e}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:#05221a;border-color:var(--accent);font-weight:650}
+button.primary:hover{background:var(--accent2)}
+button.danger{color:var(--danger);border-color:#4a2530}
+button.ghost{background:transparent}
+button.small{padding:6px 10px;font-size:13px}
+input,textarea,select{width:100%;background:#0e141b;border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none}
+input:focus,textarea:focus{border-color:var(--accent)}
+textarea{min-height:80px;resize:vertical}
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px}
+.wrap{max-width:760px;margin:0 auto}
+.hidden{display:none!important}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.row{display:flex;gap:8px;align-items:center}
+.row>input{flex:1}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* Kilit ekranı */
+#lock{max-width:420px;margin:8vh auto 0}
+.logo{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.logo .ic{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#1f8fff);display:grid;place-items:center;font-size:22px}
+.logo h1{font-size:20px;margin:0}
+.tabs{display:flex;gap:6px;background:#0e141b;border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:6px}
+.tabs button{flex:1;border:0;background:transparent;color:var(--muted)}
+.tabs button.on{background:var(--panel2);color:var(--text)}
+.filebox{border:1px dashed #3a4a5e;border-radius:12px;padding:14px;text-align:center;cursor:pointer;color:var(--muted)}
+.filebox.ok{border-color:var(--accent);color:var(--text)}
+.err{color:var(--danger);font-size:14px;min-height:20px;margin-top:10px}
+.notice{background:#2a2412;border:1px solid #574818;color:var(--warn);border-radius:12px;padding:12px;font-size:14px;margin-top:14px}
+details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:12px}
+.full{width:100%;margin-top:16px}
+
+/* Kasa ekranı */
+header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;background:var(--bg);padding:12px 0 10px}
+.topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.topbar h2{font-size:18px;margin:0;flex:1;min-width:120px}
+.badge{font-size:12px;padding:3px 8px;border-radius:99px;background:var(--panel2);color:var(--muted);margin-left:6px;vertical-align:middle}
+.badge.dirty{background:#3a2d0f;color:var(--warn)}
+#saveBtn.dirty{background:var(--warn);color:#2a1d00;border-color:var(--warn);font-weight:650}
+.search{margin-top:10px}
+.list{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.item{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+.av{flex:none;width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-weight:700;color:#06121c}
+.meta{flex:1;min-width:0;cursor:pointer}
+.meta b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta span{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acts{display:flex;gap:6px;flex:none}
+.empty{text-align:center;color:var(--muted);padding:40px 10px}
+.menu{position:relative}
+.menu .dd{position:absolute;right:0;top:calc(100% + 6px);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;min-width:230px;box-shadow:0 10px 30px #0008;z-index:10}
+.menu .dd button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:10px 12px}
+.menu .dd button:hover{background:var(--panel2)}
+
+/* Pencere */
+.modal{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:50;padding:16px}
+@media(min-width:640px){.modal{align-items:center}}
+.modal .card{width:100%;max-width:520px;max-height:92vh;overflow:auto}
+.modal h3{margin:0 0 4px}
+.gen{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:13px;color:var(--muted)}
+.gen input[type=range]{flex:1;min-width:120px;padding:0}
+.gen label{display:flex;gap:6px;align-items:center;margin:0}
+.gen input[type=checkbox]{width:auto}
+.strength{height:5px;border-radius:9px;background:var(--line);margin-top:8px;overflow:hidden}
+.strength i{display:block;height:100%;width:0;transition:.2s}
+.foot{display:flex;gap:8px;justify-content:space-between;margin-top:18px;flex-wrap:wrap}
+.foot .r{display:flex;gap:8px;margin-left:auto}
+
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#1f2b38;border:1px solid var(--line);padding:10px 16px;border-radius:12px;opacity:0;transition:.2s;z-index:99;pointer-events:none;max-width:90vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ KİLİT EKRANI ============ -->
+  <section id="lock" class="card">
+    <div class="logo"><div class="ic">🔐</div><div><h1>Şifre Kasası</h1><div class="muted small">AES-256 · cihazında şifrelenir</div></div></div>
+
+    <div class="tabs">
+      <button id="tabOpen" class="on">Kasayı aç</button>
+      <button id="tabNew">Yeni kasa</button>
+    </div>
+
+    <div id="paneOpen">
+      <label>Kasa dosyası</label>
+      <div id="fileBox" class="filebox">📁 Dosya seç (kasa.json)</div>
+      <input id="fileInput" type="file" class="hidden">
+      <details>
+        <summary>Dosya yerine şifreli metni yapıştır</summary>
+        <textarea id="pasteBox" placeholder='{"app":"sifre-kasasi",...}'></textarea>
+      </details>
+      <label>Ana şifre</label>
+      <input id="openPw" type="password" autocomplete="current-password" placeholder="Ana şifren">
+      <button id="openBtn" class="primary full">Kilidi aç</button>
+    </div>
+
+    <div id="paneNew" class="hidden">
+      <label>Ana şifre belirle</label>
+      <input id="newPw" type="password" autocomplete="new-password" placeholder="En az 10 karakter, uzun bir cümle olabilir">
+      <div class="strength"><i id="newStr"></i></div>
+      <label>Ana şifre (tekrar)</label>
+      <input id="newPw2" type="password" autocomplete="new-password">
+      <div class="notice">⚠️ Ana şifreni unutursan kasayı açmanın <b>hiçbir yolu yoktur</b>. Kâğıda yazıp güvenli bir yerde sakla.</div>
+      <button id="createBtn" class="primary full">Kasayı oluştur</button>
+    </div>
+
+    <div id="lockErr" class="err"></div>
+
+    <div id="pendingBox" class="notice hidden">
+      Kasa kaydedilmemiş değişikliklerle kilitlendi. Değişiklikler şifreli olarak bekliyor.
+      <div class="row" style="margin-top:10px"><button id="pendingSave" class="small">Şifreli dosyayı indir</button><button id="pendingDrop" class="small ghost">Yok say</button></div>
+    </div>
+  </section>
+
+  <!-- ============ KASA EKRANI ============ -->
+  <section id="vault" class="hidden">
+    <header class="top">
+      <div class="topbar">
+        <h2>🔐 Kasam <span id="count" class="badge">0</span><span id="dirtyBadge" class="badge dirty hidden">kaydedilmedi</span></h2>
+        <button id="addBtn" class="primary">+ Yeni</button>
+        <button id="saveBtn">💾 Kaydet</button>
+        <div class="menu">
+          <button id="menuBtn">⋯</button>
+          <div id="menuDd" class="dd hidden">
+            <button data-act="csv">📥 CSV içe aktar (Chrome vb.)</button>
+            <button data-act="copyblob">📋 Şifreli metni kopyala</button>
+            <button data-act="chpw">🔑 Ana şifreyi değiştir</button>
+            <button data-act="lock">🔒 Kilitle</button>
+          </div>
+        </div>
+      </div>
+      <input id="search" class="search" type="search" placeholder="Ara: site, kullanıcı adı, not…" autocomplete="off">
+    </header>
+    <div id="list" class="list"></div>
+    <input id="csvInput" type="file" accept=".csv,text/csv" class="hidden">
+  </section>
+</div>
+
+<!-- Kayıt penceresi -->
+<div id="entryModal" class="modal hidden">
+  <div class="card">
+    <h3 id="entryTitle">Yeni kayıt</h3>
+    <label>Başlık</label><input id="fTitle" placeholder="ör. Gmail, Instagram" autocomplete="off">
+    <label>Web adresi</label><input id="fUrl" placeholder="ör. instagram.com" autocomplete="off" inputmode="url">
+    <label>Kullanıcı adı / e-posta</label>
+    <div class="row"><input id="fUser" autocomplete="off"><button class="small" data-copy="fUser">Kopyala</button></div>
+    <label>Şifre</label>
+    <div class="row"><input id="fPass" type="password" autocomplete="off"><button class="small" id="togglePass">👁</button><button class="small" data-copy="fPass">Kopyala</button></div>
+    <div class="strength"><i id="passStr"></i></div>
+    <div class="gen">
+      <span>Uzunluk <b id="genLenTxt">20</b></span>
+      <input id="genLen" type="range" min="8" max="48" value="20">
+      <label><input id="genSym" type="checkbox" checked> Semboller</label>
+      <button class="small" id="genBtn">🎲 Üret</button>
+    </div>
+    <label>Not</label><textarea id="fNote" placeholder="Güvenlik soruları, PIN, kurtarma kodları…"></textarea>
+    <div class="foot">
+      <button id="delBtn" class="danger">Sil</button>
+      <div class="r"><button id="cancelBtn" class="ghost">Vazgeç</button><button id="okBtn" class="primary">Tamam</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Ana şifre değiştir -->
+<div id="pwModal" class="modal hidden">
+  <div class="card">
+    <h3>Ana şifreyi değiştir</h3>
+    <label>Yeni ana şifre</label><input id="cPw" type="password" autocomplete="new-password">
+    <div class="strength"><i id="cStr"></i></div>
+    <label>Tekrar</label><input id="cPw2" type="password" autocomplete="new-password">
+    <div id="cErr" class="err"></div>
+    <div class="foot"><div class="r"><button id="cCancel" class="ghost">Vazgeç</button><button id="cOk" class="primary">Değiştir</button></div></div>
+  </div>
+</div>
+
+<!-- Onay penceresi -->
+<div id="askModal" class="modal hidden">
+  <div class="card">
+    <h3 id="askText">Emin misin?</h3>
+    <div class="foot"><div class="r"><button id="askNo" class="ghost">Vazgeç</button><button id="askYes" class="primary">Evet</button></div></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const te = new TextEncoder(), td = new TextDecoder();
+const ITER = 600000;            // PBKDF2 tur sayısı
+const AUTOLOCK_MS = 5 * 60e3;   // 5 dk işlem yoksa kilitle
+const CLIP_MS = 30e3;           // panoyu 30 sn sonra temizle
+
+let S = { key:null, salt:null, iter:ITER, data:null, dirty:false, fileName:'kasa.json', editing:null, pending:null };
+let loadedText = null;
+
+/* ---------- yardımcılar ---------- */
+function b64(buf){ const b=new Uint8Array(buf); let s=''; for(let i=0;i<b.length;i+=0x8000) s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000)); return btoa(s); }
+function unb64(s){ const bin=atob(s); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u; }
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function uid(){ return b64(crypto.getRandomValues(new Uint8Array(9))).replace(/[+/=]/g,''); }
+let toastT; function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2600); }
+function show(el,on){ el.classList.toggle('hidden',!on); }
+function ask(text,yes){ return new Promise(res=>{ $('#askText').textContent=text; $('#askYes').textContent=yes||'Evet'; show($('#askModal'),1);
+  const done=v=>{ show($('#askModal'),0); $('#askYes').onclick=$('#askNo').onclick=null; res(v); };
+  $('#askYes').onclick=()=>done(true); $('#askNo').onclick=()=>done(false); }); }
+
+/* ---------- şifreleme ---------- */
+async function deriveKey(pw,salt,iter){
+  const base = await crypto.subtle.importKey('raw', te.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:iter,hash:'SHA-256'}, base, {name:'AES-GCM',length:256}, false, ['encrypt','decrypt']);
+}
+async function encryptVault(){
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  S.data.updated = new Date().toISOString();
+  const ct = await crypto.subtle.encrypt({name:'AES-GCM',iv}, S.key, te.encode(JSON.stringify(S.data)));
+  return JSON.stringify({app:'sifre-kasasi',v:1,kdf:'PBKDF2-SHA256',iter:S.iter,salt:b64(S.salt),iv:b64(iv),ct:b64(ct)});
+}
+async function decryptVault(text,pw){
+  let o; try{ o=JSON.parse(text.trim()); }catch(e){ throw new Error('Bu bir kasa dosyası değil.'); }
+  if(!o || o.app!=='sifre-kasasi' || !o.ct) throw new Error('Bu bir kasa dosyası değil.');
+  const salt=unb64(o.salt), key=await deriveKey(pw,salt,o.iter||ITER);
+  let pt; try{ pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(o.iv)}, key, unb64(o.ct)); }
+  catch(e){ throw new Error('Ana şifre yanlış ya da dosya bozuk.'); }
+  return { key, salt, iter:o.iter||ITER, data:JSON.parse(td.decode(pt)) };
+}
+
+/* ---------- şifre üretici / güç ---------- */
+function randInt(n){ const lim=Math.floor(0x100000000/n)*n; const a=new Uint32Array(1); do{ crypto.getRandomValues(a); }while(a[0]>=lim); return a[0]%n; }
+function genPass(len,sym){
+  const sets=['ABCDEFGHJKLMNPQRSTUVWXYZ','abcdefghijkmnopqrstuvwxyz','23456789']; if(sym) sets.push('!@#$%&*?-_=+.');
+  const all=sets.join(''); const out=sets.map(s=>s[randInt(s.length)]);
+  while(out.length<len) out.push(all[randInt(all.length)]);
+  for(let i=out.length-1;i>0;i--){ const j=randInt(i+1); [out[i],out[j]]=[out[j],out[i]]; }
+  return out.join('');
+}
+function strength(p){
+  if(!p) return 0; let pool=0;
+  if(/[a-zçğıöşü]/.test(p)) pool+=26; if(/[A-ZÇĞİÖŞÜ]/.test(p)) pool+=26; if(/\d/.test(p)) pool+=10; if(/[^a-zA-Z0-9çğıöşüÇĞİÖŞÜ]/.test(p)) pool+=20;
+  const bits=p.length*Math.log2(Math.max(pool,1)); return Math.min(1,bits/100);
+}
+function paintStr(el,p){ const v=strength(p); el.style.width=(v*100)+'%'; el.style.background=v<.4?'var(--danger)':v<.7?'var(--warn)':'var(--accent)'; }
+
+/* ---------- pano ---------- */
+let clipT;
+async function copy(text){
+  try{ await navigator.clipboard.writeText(text); }
+  catch(e){ const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+  toast('Kopyalandı · 30 sn sonra pano temizlenecek');
+  clearTimeout(clipT); clipT=setTimeout(()=>{ navigator.clipboard?.writeText('').catch(()=>{}); },CLIP_MS);
+}
+
+/* ---------- kilit ekranı ---------- */
+$('#tabOpen').onclick=()=>{ $('#tabOpen').classList.add('on'); $('#tabNew').classList.remove('on'); show($('#paneOpen'),1); show($('#paneNew'),0); $('#lockErr').textContent=''; };
+$('#tabNew').onclick =()=>{ $('#tabNew').classList.add('on'); $('#tabOpen').classList.remove('on'); show($('#paneNew'),1); show($('#paneOpen'),0); $('#lockErr').textContent=''; };
+$('#fileBox').onclick=()=>$('#fileInput').click();
+$('#fileInput').onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  loadedText=await f.text(); S.fileName=(f.name||'kasa').replace(/\.[^.]*$/,'')+'.json';
+  $('#fileBox').textContent='✅ '+S.fileName; $('#fileBox').classList.add('ok'); $('#openPw').focus();
+};
+$('#newPw').oninput=e=>paintStr($('#newStr'),e.target.value);
+
+async function busy(btn,label,fn){ const old=btn.textContent; btn.disabled=true; btn.textContent=label; try{ await fn(); } finally{ btn.disabled=false; btn.textContent=old; } }
+
+$('#openBtn').onclick=()=>busy($('#openBtn'),'Açılıyor…',async()=>{
+  $('#lockErr').textContent='';
+  const text=$('#pasteBox').value.trim()||loadedText; const pw=$('#openPw').value;
+  if(!text) return $('#lockErr').textContent='Önce kasa dosyasını seç.';
+  if(!pw) return $('#lockErr').textContent='Ana şifreyi gir.';
+  try{
+    const r=await decryptVault(text,pw);
+    Object.assign(S,{key:r.key,salt:r.salt,iter:r.iter,data:r.data,dirty:false,pending:null});
+    if(!Array.isArray(S.data.entries)) S.data.entries=[];
+    enterVault();
+  }catch(err){ $('#lockErr').textContent=err.message; }
+});
+$('#openPw').onkeydown=e=>{ if(e.key==='Enter') $('#openBtn').click(); };
+
+$('#createBtn').onclick=()=>busy($('#createBtn'),'Oluşturuluyor…',async()=>{
+  const p=$('#newPw').value, p2=$('#newPw2').value; $('#lockErr').textContent='';
+  if(p.length<10) return $('#lockErr').textContent='Ana şifre en az 10 karakter olmalı.';
+  if(p!==p2) return $('#lockErr').textContent='İki şifre aynı değil.';
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  Object.assign(S,{salt,iter:ITER,key:await deriveKey(p,salt,ITER),data:{entries:[],created:new Date().toISOString()},fileName:'kasa.json',pending:null});
+  enterVault(); setDirty(true); toast('Kasa oluşturuldu. Kayıt ekleyip 💾 Kaydet’e bas.');
+});
+
+$('#pendingSave').onclick=()=>{ if(S.pending) saveBlob(S.pending,()=>{ S.pending=null; show($('#pendingBox'),0); }); };
+$('#pendingDrop').onclick=async()=>{ if(await ask('Kaydedilmemiş değişiklikler silinsin mi?','Sil')){ S.pending=null; show($('#pendingBox'),0); } };
+
+/* ---------- kasa ---------- */
+function enterVault(){
+  ['#openPw','#newPw','#newPw2','#pasteBox'].forEach(s=>$(s).value=''); paintStr($('#newStr'),'');
+  show($('#lock'),0); show($('#vault'),1); show($('#pendingBox'),0); $('#search').value=''; render(); resetTimer();
+}
+async function lock(auto){
+  closeModals(); show($('#menuDd'),0);
+  if(S.dirty && S.key){ S.pending=await encryptVault(); }
+  S.key=null; S.data=null; S.salt=null; S.dirty=false; loadedText=null;
+  $('#list').innerHTML=''; $('#fileBox').textContent='📁 Dosya seç (kasa.json)'; $('#fileBox').classList.remove('ok'); $('#fileInput').value='';
+  show($('#vault'),0); show($('#lock'),1); show($('#pendingBox'),!!S.pending); $('#tabOpen').click();
+  if(auto) toast('İşlem yapılmadığı için kasa kilitlendi.');
+}
+function setDirty(v){ S.dirty=v; show($('#dirtyBadge'),v); $('#saveBtn').classList.toggle('dirty',v); }
+
+const COLORS=['#3ddc97','#5aa9ff','#f5b942','#ff7a8a','#b38cff','#4fd1c5','#ffa06b'];
+function colorFor(s){ let h=0; for(const c of s) h=(h*31+c.charCodeAt(0))>>>0; return COLORS[h%COLORS.length]; }
+
+function render(){
+  const q=$('#search').value.trim().toLocaleLowerCase('tr');
+  const all=[...S.data.entries].sort((a,b)=>(a.title||'').localeCompare(b.title||'','tr'));
+  const items=q?all.filter(e=>[e.title,e.url,e.user,e.note].join(' ').toLocaleLowerCase('tr').includes(q)):all;
+  $('#count').textContent=S.data.entries.length;
+  if(!items.length){
+    $('#list').innerHTML=`<div class="empty">${q?'Eşleşen kayıt yok.':'Kasa boş.<br><br>“+ Yeni” ile ilk şifreni ekle ya da ⋯ menüsünden CSV içe aktar.'}</div>`; return;
+  }
+  $('#list').innerHTML=items.map(e=>{
+    const t=e.title||e.url||'(başlıksız)';
+    return `<div class="item" data-id="${esc(e.id)}">
+      <div class="av" style="background:${colorFor(t)}">${esc(t.trim()[0]?.toLocaleUpperCase('tr')||'?')}</div>
+      <div class="meta" data-act="edit"><b>${esc(t)}</b><span>${esc(e.user||e.url||'')}</span></div>
+      <div class="acts">
+        ${e.user?'<button class="small" data-act="cu" title="Kullanıcı adını kopyala">👤</button>':''}
+        <button class="small primary" data-act="cp" title="Şifreyi kopyala">🔑 Kopyala</button>
+      </div></div>`;
+  }).join('');
+}
+$('#search').oninput=render;
+$('#list').onclick=e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const id=b.closest('.item').dataset.id; const en=S.data.entries.find(x=>x.id===id); if(!en) return;
+  if(b.dataset.act==='cp') copy(en.pass||'');
+  else if(b.dataset.act==='cu') copy(en.user||'');
+  else openEntry(en);
+};
+
+/* ---------- kayıt penceresi ---------- */
+function openEntry(en){
+  S.editing=en||null;
+  $('#entryTitle').textContent=en?'Kaydı düzenle':'Yeni kayıt';
+  $('#fTitle').value=en?.title||''; $('#fUrl').value=en?.url||''; $('#fUser').value=en?.user||'';
+  $('#fPass').value=en?.pass||(en?'':genPass(+$('#genLen').value,$('#genSym').checked)); $('#fNote').value=en?.note||'';
+  $('#fPass').type='password'; paintStr($('#passStr'),$('#fPass').value); show($('#delBtn'),!!en);
+  show($('#entryModal'),1); setTimeout(()=>$('#fTitle').focus(),50);
+}
+function closeModals(){ show($('#entryModal'),0); show($('#pwModal'),0); }
+$('#addBtn').onclick=()=>openEntry(null);
+$('#cancelBtn').onclick=closeModals;
+$('#togglePass').onclick=()=>{ const p=$('#fPass'); p.type=p.type==='password'?'text':'password'; };
+$('#fPass').oninput=e=>paintStr($('#passStr'),e.target.value);
+$('#genLen').oninput=e=>$('#genLenTxt').textContent=e.target.value;
+$('#genBtn').onclick=()=>{ const p=$('#fPass'); p.value=genPass(+$('#genLen').value,$('#genSym').checked); p.type='text'; paintStr($('#passStr'),p.value); };
+document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>copy($('#'+b.dataset.copy).value));
+$('#okBtn').onclick=()=>{
+  const v={title:$('#fTitle').value.trim(),url:$('#fUrl').value.trim(),user:$('#fUser').value.trim(),pass:$('#fPass').value,note:$('#fNote').value,updated:new Date().toISOString()};
+  if(!v.title && !v.url) return toast('Bir başlık ya da web adresi gir.');
+  if(S.editing) Object.assign(S.editing,v); else S.data.entries.push({id:uid(),...v});
+  closeModals(); setDirty(true); render(); toast('Kaydedildi · dosyaya yazmak için 💾 Kaydet');
+};
+$('#delBtn').onclick=async()=>{
+  if(!S.editing || !(await ask(`“${S.editing.title||S.editing.url}” silinsin mi?`,'Sil'))) return;
+  S.data.entries=S.data.entries.filter(x=>x!==S.editing); closeModals(); setDirty(true); render();
+};
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) closeModals(); }));
+
+/* ---------- kaydet ---------- */
+let dlP=null; function getDl(){ if(!dlP) dlP=(window.claude?.use?window.claude.use('downloads'):Promise.resolve(null)).catch(()=>null); return dlP; }
+async function saveBlob(text,done){
+  const name=S.fileName||'kasa.json';
+  const dl=await getDl();
+  if(dl){
+    try{ await dl.save({filename:name,data:text}); done&&done(); toast(`“${name}” kaydedildi. Drive’daki eski dosyanın yerine yükle.`); }
+    catch(e){ if(e&&e.code==='declined') toast('Kaydetme iptal edildi.'); else toast('Dosya kaydedilemedi. ⋯ menüsünden şifreli metni kopyala.'); }
+    return;
+  }
+  const blob=new Blob([text],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000); done&&done();
+  toast(`“${name}” indirildi. Drive’daki eski dosyanın yerine yükle.`);
+}
+$('#saveBtn').onclick=async()=>{ const t=await encryptVault(); saveBlob(t,()=>setDirty(false)); };
+
+/* ---------- menü ---------- */
+$('#menuBtn').onclick=e=>{ e.stopPropagation(); show($('#menuDd'),$('#menuDd').classList.contains('hidden')); };
+document.addEventListener('click',()=>show($('#menuDd'),0));
+$('#menuDd').onclick=async e=>{
+  const a=e.target.closest('[data-act]')?.dataset.act; if(!a) return; show($('#menuDd'),0);
+  if(a==='lock') lock(false);
+  if(a==='csv') $('#csvInput').click();
+  if(a==='copyblob'){ const t=await encryptVault(); try{ await navigator.clipboard.writeText(t); toast('Şifreli metin kopyalandı (ana şifre olmadan okunamaz).'); }catch(_){ toast('Kopyalanamadı.'); } }
+  if(a==='chpw'){ ['#cPw','#cPw2'].forEach(s=>$(s).value=''); $('#cErr').textContent=''; paintStr($('#cStr'),''); show($('#pwModal'),1); }
+};
+
+/* ---------- ana şifre değiştir ---------- */
+$('#cPw').oninput=e=>paintStr($('#cStr'),e.target.value);
+$('#cCancel').onclick=closeModals;
+$('#cOk').onclick=()=>busy($('#cOk'),'Değiştiriliyor…',async()=>{
+  const p=$('#cPw').value;
+  if(p.length<10) return $('#cErr').textContent='En az 10 karakter olmalı.';
+  if(p!==$('#cPw2').value) return $('#cErr').textContent='İki şifre aynı değil.';
+  S.salt=crypto.getRandomValues(new Uint8Array(16)); S.iter=ITER; S.key=await deriveKey(p,S.salt,ITER);
+  closeModals(); setDirty(true); toast('Ana şifre değişti. Şimdi 💾 Kaydet ve Drive’a yükle.');
+});
+
+/* ---------- CSV içe aktarma ---------- */
+function parseCSV(txt){
+  const rows=[]; let row=[], f='', q=false;
+  for(let i=0;i<txt.length;i++){
+    const c=txt[i];
+    if(q){ if(c==='"'){ if(txt[i+1]==='"'){ f+='"'; i++; } else q=false; } else f+=c; }
+    else if(c==='"') q=true;
+    else if(c===','||c===';'){ row.push(f); f=''; }
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&txt[i+1]==='\n') i++; row.push(f); rows.push(row); row=[]; f=''; }
+    else f+=c;
+  }
+  if(f||row.length){ row.push(f); rows.push(row); }
+  return rows.filter(r=>r.some(x=>x.trim()));
+}
+$('#csvInput').onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return; e.target.value='';
+  const rows=parseCSV((await f.text()).replace(/^\uFEFF/,'')); if(rows.length<2) return toast('CSV boş görünüyor.');
+  const h=rows[0].map(x=>x.trim().toLowerCase());
+  const idx=(...n)=>h.findIndex(x=>n.includes(x));
+  const iT=idx('name','title','başlık','ad'), iU=idx('url','login_uri','website','web adresi'), iN=idx('username','login_username','user','email','kullanıcı adı'),
+        iP=idx('password','login_password','şifre','parola'), iO=idx('note','notes','not');
+  if(iP<0) return toast('CSV’de “password” sütunu bulunamadı.');
+  let n=0;
+  for(const r of rows.slice(1)){
+    const pass=r[iP]||''; if(!pass) continue;
+    let url=iU>=0?r[iU]||'':''; let title=iT>=0?r[iT]||'':'';
+    if(!title&&url){ try{ title=new URL(url).hostname.replace(/^www\./,''); }catch(_){ title=url; } }
+    S.data.entries.push({id:uid(),title,url,user:iN>=0?r[iN]||'':'',pass,note:iO>=0?r[iO]||'':'',updated:new Date().toISOString()}); n++;
+  }
+  setDirty(true); render(); toast(`${n} kayıt içe aktarıldı. 💾 Kaydet’i unutma, sonra CSV dosyasını sil!`);
+};
+
+/* ---------- otomatik kilit ---------- */
+let idleT;
+function resetTimer(){ clearTimeout(idleT); if(S.key) idleT=setTimeout(()=>lock(true),AUTOLOCK_MS); }
+['pointerdown','keydown','scroll','touchstart'].forEach(ev=>addEventListener(ev,resetTimer,{passive:true}));
+addEventListener('beforeunload',e=>{ if(S.dirty||S.pending){ e.preventDefault(); e.returnValue=''; } });
+
+if(!window.crypto?.subtle){ $('#lockErr').textContent='Bu tarayıcı güvenli şifrelemeyi desteklemiyor. Sayfayı https adresinden ya da güncel Chrome/Safari ile aç.'; }
+</script>
+
+</body>
+</html>
