@@ -75,7 +75,7 @@ Hazır şifre yöneticileri harika ama bazen tam kontrol istersin: verinin nered
 
 > ⚠️ **Ana şifreni unutursan kasayı açmanın hiçbir yolu yoktur.** Kâğıda yazıp güvenli bir yerde sakla ve kasa dosyanın yedeğini tut.
 
-> ℹ️ Bu proje kişisel kullanım için geliştirilmiştir ve bağımsız bir güvenlik denetiminden geçmemiştir. Kritik kullanımlar için Bitwarden ya da KeePassXC gibi denetlenmiş çözümleri de değerlendir.
+> ℹ️ Bu proje kişisel kullanım için geliştirilmiş açık kaynaklı bir çalışmadır ve bağımsız bir güvenlik denetiminden geçmemiştir. Kodun tamamı tek dosyada olduğu için herkes inceleyebilir. Yazılım olduğu gibi sunulur; kullanım sorumluluğu kullanıcıya aittir. Kasa dosyanın düzenli yedeğini almanı öneririz.
 
 ---
 
@@ -130,7 +130,7 @@ Ready-made password managers are great, but sometimes you want full control: kno
 
 > ⚠️ **If you forget your master password, there is no way to open the vault.** Write it down, keep it somewhere safe, and keep backups of your vault file.
 
-> ℹ️ This project was built for personal use and has not been independently security audited. For critical use, also consider audited solutions such as Bitwarden or KeePassXC.
+> ℹ️ This is an open-source project built for personal use and has not been independently security audited. All of the code is in a single file, so anyone can review it. The software is provided as is, and you use it at your own responsibility. We recommend keeping regular backups of your vault file.
 
 ---
 
