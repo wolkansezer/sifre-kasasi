@@ -46,7 +46,7 @@ Hazır şifre yöneticileri harika ama bazen tam kontrol istersin: verinin nered
 - **Arama**: Başlık, adres, kullanıcı adı ve notlarda
 - **Toplu içe aktarma**: iPhone/Safari ZIP dosyası, Chrome, Edge, Firefox, Google hesabı ve Mac dışa aktarımları tek seferde; ya da metin olarak yapıştır. Aynı kayıtları atlar, değişen şifreleri günceller
 - **Ana şifre değiştirme**
-- **Mobil uyumlu**: iPhone ve Android'de ana ekrana eklenebilir
+- **Ana ekran uygulaması**: 📲 Ana ekrana ekle butonu cihazına göre (iPhone, Android, bilgisayarda QR kod) adım adım yol gösterir; ana ekrandan tam ekran ve internetsiz çalışır
 - **Türkçe ve İngilizce arayüz** (🌐 butonuyla değiştirilir), koyu tema
 
 ### Kullanım
@@ -102,7 +102,7 @@ Ready-made password managers are great, but sometimes you want full control: kno
 - **Search** across titles, websites, usernames and notes
 - **Bulk import**: iPhone/Safari ZIP, Chrome, Edge, Firefox, Google account and Mac exports in one go, or paste as text. Skips duplicates and updates changed passwords
 - **Change master password**
-- **Mobile friendly**: Add it to the home screen on iPhone and Android
+- **Home screen app**: The 📲 Add to home screen button guides you step by step for your device (iPhone, Android, or a QR code on desktop); from the home screen it runs full screen and offline
 - **Turkish and English interface** (switch with the 🌐 button), dark theme
 
 ### Usage

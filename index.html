@@ -4,10 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="description" content="Tarayıcıda çalışan, şifreleri cihazda AES-256-GCM ile şifreleyen tek dosyalık şifre kasası.">
 <title>Şifre Kasası</title>
 <meta name="theme-color" content="#0b0f14">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Şifre Kasası">
 <style>
@@ -100,6 +104,14 @@ label.check input{width:auto}
 .hist{display:flex;gap:8px;align-items:center;font-size:13px;padding:4px 0}
 .hist code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:ui-monospace,Menlo,Consolas,monospace}
 .hist span{color:var(--muted)}
+.installBtn.full{margin-top:14px}
+.ihead{display:flex;gap:12px;align-items:center;margin-bottom:10px}.ihead img{border-radius:12px;flex:none}.ihead h3{margin:0}
+.isteps{margin:8px 0 0;padding-left:20px;display:grid;gap:10px;font-size:15px}
+.isteps .ico,#iSteps .ico{vertical-align:-3px;color:#3b82f6}
+.iqr{display:flex;justify-content:center;margin-top:14px}.iqr img{border-radius:12px;background:#fff;padding:6px;max-width:100%;height:auto}
+.ilink{display:flex;gap:8px;align-items:center;margin-top:12px;background:#0e141b;border:1px solid var(--line);border-radius:10px;padding:8px 8px 8px 12px}
+.ilink code{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;font-size:13px}
+
 
 
 .menu{position:relative}
@@ -162,6 +174,7 @@ label.check input{width:auto}
     </div>
 
     <div id="lockErr" class="err"></div>
+    <button class="installBtn ghost full">📲 Ana ekrana ekle</button>
 
     <div id="pendingBox" class="notice hidden">
       Kasa kaydedilmemiş değişikliklerle kilitlendi. Değişiklikler şifreli olarak bekliyor.
@@ -183,6 +196,7 @@ label.check input{width:auto}
             <button data-act="copyblob">📋 Şifreli metni kopyala</button>
             <button data-act="chpw">🔑 Ana şifreyi değiştir</button>
             <button data-act="download" id="dlItem" class="hidden">📥 Dosya olarak indir</button>
+            <button class="installBtn">📲 Ana ekrana ekle</button>
             <button class="langBtn">🌐 English</button>
             <button data-act="lock">🔒 Kilitle</button>
           </div>
@@ -232,6 +246,19 @@ label.check input{width:auto}
     <label>Tekrar</label><input id="cPw2" type="password" autocomplete="new-password">
     <div id="cErr" class="err"></div>
     <div class="foot"><div class="r"><button id="cCancel" class="ghost">Vazgeç</button><button id="cOk" class="primary">Değiştir</button></div></div>
+  </div>
+</div>
+
+<!-- Ana ekrana ekle -->
+<div id="installModal" class="modal hidden">
+  <div class="card">
+    <div class="ihead"><img src="data:image/png;base64,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" width="48" height="48" alt=""><div><h3>📲 Ana ekrana ekle</h3><div class="muted small">Şifre Kasası’nı telefonunda uygulama gibi kullan</div></div></div>
+    <div id="iSteps" data-raw></div>
+    <button id="iPrompt" class="primary full hidden">📲 Uygulamayı yükle</button>
+    <div id="iQr" class="iqr hidden"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASgAAAEoAQAAAADDfFG0AAACBElEQVR4Xu1aQW7DMAyzh/7/yxpEUrJcpEUfQHbYsiYngqIoOTvWD/j74Znlpxrmq/Baa/M6duAy9lp5FeeO+Zp8JTPkppnbwTKtO9bX0Bd4SmaKLslrU2F5x3wVBhMQU6y9wZLII8zXA1+pJ/5KhfHKfL3h1TYFw091UV4BwsSZ9dWQs1NU7x91zjBfhVl1O/CRqFyPj4hoibV1RSIlByNb1tft5GiFkYYVUFg6WHqYMka4P158QUWxsw7T7bMQUZYVyLb5GuiaSznlD2tQrZFc2u8bmSegLHDFykRF4t9KFO6Poz/u5IledeZsmFilMPN15wnNP9xPHKoQMPCk9VVIJlh/HB/T61WM/B6t0nzNvNqjtRZgoJAdUrZvvqa+FFQzU3Dhxb8w+1Sb9XXnCamIw+MNcuY8ceUJ9UeuJbghVMyvLZjrsYGYynGxNoaVuhhWPT9OcM9VC2mWo1xM+dX76AslIqhMAxFB7/J+4gL3qzra4Ena2eP3Gt/+NfIX56HK8p3pFcvApfmaeVXgEW1vwDR241vzVRjn21WWOPFAD6jYar6uemSo7yUFTyFr8IbvW19DX32Kfc+MNDCuwsxX4WICEqv3TE7QsL4OrvcBqk32mVoefKTKrK+ZJ+Rf48Sx9q0VXM3X9C/tvxQlEFq1jq4XAszXQ/76AvP16PcfYb4K/wirGe2mLXqOAAAAAElFTkSuQmCC" width="180" height="180" alt="QR: https://wolkansezer.github.io/sifre-kasasi/"></div>
+    <div id="iLink" class="ilink hidden" data-raw><code id="iUrl">https://wolkansezer.github.io/sifre-kasasi/</code><button id="iCopy" class="small">📋</button></div>
+    <p id="iNote" class="muted small" data-raw></p>
+    <div class="foot"><div class="r"><button id="iClose" class="primary">Tamam</button></div></div>
   </div>
 </div>
 
@@ -763,6 +790,60 @@ $('#driveOpenBtn').onclick=()=>busy($('#driveOpenBtn'),L('Drive’dan alınıyor
 $('#saveBtn').onclick=async()=>{ if(await driveReady()) return driveBackup(''); const t=await encryptVault(); saveBlob(t,()=>setDirty(false)); };
 getMcp().then(m=>{ if(m){ show($('#driveOpenBtn'),1); $('#saveBtn').textContent=L('☁️ Kaydet','☁️ Save'); show($('#dlItem'),1); } });
 
+/* ---------- ana ekrana ekle ---------- */
+const APP_URL='https://wolkansezer.github.io/sifre-kasasi/';
+let deferredPrompt=null;
+const UA=navigator.userAgent;
+const isIOS=/iPhone|iPad|iPod/.test(UA)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const isAndroid=/Android/i.test(UA);
+const inAppBrowser=/Instagram|FBAN|FBAV|FB_IAB|Line\/|Twitter|TikTok|musical_ly|Snapchat|GSA\//i.test(UA);
+const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isHosted=!!document.querySelector('link[rel=manifest]') && (location.protocol==='https:'||location.hostname==='localhost') && !window.claude;
+function installMode(){
+  if(!isHosted) return 'link';
+  if(isIOS) return inAppBrowser?'inapp':/CriOS|FxiOS|EdgiOS/.test(UA)?'ios-other':'ios-safari';
+  if(isAndroid) return inAppBrowser?'inapp':deferredPrompt?'prompt':'android';
+  return deferredPrompt?'prompt':'desktop';
+}
+function stepsFor(m){
+  const li=a=>'<ol class="isteps">'+a.map(x=>`<li>${x}</li>`).join('')+'</ol>';
+  if(m==='ios-safari') return li([
+    L('Alttaki <b>Paylaş</b> düğmesine <svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg> dokun. Göremiyorsan önce <b>•••</b> düğmesine dokun.','Tap the <b>Share</b> button <svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg> at the bottom. If you don’t see it, tap <b>•••</b> first.'),
+    L('Listeyi aşağı kaydır ve <b>Ana Ekrana Ekle</b>’ye dokun.','Scroll down and tap <b>Add to Home Screen</b>.'),
+    L('<b>Web Uygulaması Olarak Aç</b> seçeneği varsa açık kalsın, sonra <b>Ekle</b>’ye dokun.','If you see <b>Open as Web App</b>, leave it on, then tap <b>Add</b>.')]);
+  if(m==='ios-other') return li([
+    L('Adres çubuğundaki <b>Paylaş</b> düğmesine <svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg> dokun.','Tap the <b>Share</b> button <svg class="ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg> next to the address bar.'),
+    L('<b>Ana Ekrana Ekle</b>’yi seç ve <b>Ekle</b>’ye dokun.','Choose <b>Add to Home Screen</b> and tap <b>Add</b>.'),
+    L('Seçenek yoksa adresi kopyalayıp <b>Safari</b>’de aç ve bu butona tekrar bas.','If it’s missing, copy the address, open it in <b>Safari</b> and press this button again.')]);
+  if(m==='inapp') return `<p>${L('Bu sayfa bir uygulamanın içindeki tarayıcıda açıldı. Oradan ana ekrana eklenemiyor.','This page opened inside an app’s browser. It can’t be added to the home screen from there.')}</p>`+li([
+    L('Sağ üstteki <b>⋯</b> menüsünden <b>Tarayıcıda aç</b> (ya da <b>Safari’de aç</b>) seçeneğine dokun.','Tap <b>⋯</b> at the top right and choose <b>Open in browser</b> (or <b>Open in Safari</b>).'),
+    L('Açılan sayfada <b>📲 Ana ekrana ekle</b>’ye tekrar bas.','On the page that opens, press <b>📲 Add to home screen</b> again.')]);
+  if(m==='android') return li([
+    L('Sağ üstteki <b>⋮</b> menüsüne dokun.','Tap the <b>⋮</b> menu at the top right.'),
+    L('<b>Ana ekrana ekle</b> ya da <b>Uygulamayı yükle</b>’yi seç.','Choose <b>Add to home screen</b> or <b>Install app</b>.'),
+    L('<b>Yükle</b>’ye dokun.','Tap <b>Install</b>.')]);
+  if(m==='prompt') return `<p>${L('Tek dokunuşla uygulama olarak yükleyebilirsin.','You can install it as an app with one tap.')}</p>`;
+  if(m==='desktop') return `<p>${L('Telefonunun kamerasıyla QR kodu okut. Açılan sayfada <b>📲 Ana ekrana ekle</b>’ye bas.','Scan the QR code with your phone camera. On the page that opens, press <b>📲 Add to home screen</b>.')}</p>`;
+  return `<p>${L('Ana ekrana eklemek için kasanın kendi adresini kullan. Telefonunda QR kodu kameraya okut ya da adresi Safari’de aç, sonra sayfadaki <b>📲 Ana ekrana ekle</b>’ye bas.','To add it to your home screen, use the vault’s own address. Scan the QR code with your phone camera or open the address in Safari, then press <b>📲 Add to home screen</b> on that page.')}</p>`;
+}
+function openInstall(){
+  const m=installMode();
+  $('#iSteps').innerHTML=stepsFor(m);
+  show($('#iQr'),m==='link'||m==='desktop'); show($('#iLink'),m==='link'||m==='desktop'||m==='inapp'||m==='ios-other');
+  show($('#iPrompt'),m==='prompt');
+  $('#iNote').textContent=L('Ana ekrandan açtığında kasa uygulama gibi tam ekran açılır ve internet olmadan da çalışır. Kasa dosyan ve şifrelerin yine sadece sende kalır.','From the home screen the vault opens full screen like an app and works offline. Your vault file and passwords still stay only with you.');
+  show($('#installModal'),1);
+}
+function updateInstallUI(){ const hide=isStandalone(); document.querySelectorAll('.installBtn').forEach(b=>show(b,!hide)); }
+addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredPrompt=e; updateInstallUI(); });
+addEventListener('appinstalled',()=>{ deferredPrompt=null; show($('#installModal'),0); updateInstallUI(); toast(L('Şifre Kasası ana ekrana eklendi ✅','Password Vault added to your home screen ✅')); });
+document.querySelectorAll('.installBtn').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); show($('#menuDd'),0); openInstall(); }));
+$('#iPrompt').onclick=async()=>{ if(!deferredPrompt) return; deferredPrompt.prompt(); try{ await deferredPrompt.userChoice; }catch(_){} deferredPrompt=null; show($('#installModal'),0); };
+$('#iCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText(APP_URL); toast(L('Adres kopyalandı','Address copied')); }catch(_){ const r=document.createRange(); r.selectNodeContents($('#iUrl')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); } };
+$('#iClose').onclick=()=>show($('#installModal'),0);
+updateInstallUI();
+if(isHosted && 'serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+
 /* ---------- otomatik kilit ---------- */
 let idleT;
 function resetTimer(){ clearTimeout(idleT); if(S.key) idleT=setTimeout(()=>lock(true),AUTOLOCK_MS); }
@@ -807,6 +888,7 @@ const I18N = [
   ['Kaydedilmemiş değişiklikler silinsin mi?','Discard unsaved changes?'],
   ['Eşleşen kayıt yok.','No matching entries.'],['Kasa boş.','The vault is empty.'],
   ['📥 Şifreleri içe aktar','📥 Import passwords'],
+  ['📲 Ana ekrana ekle','📲 Add to home screen'],['Şifre Kasası’nı telefonunda uygulama gibi kullan','Use Password Vault like an app on your phone'],['📲 Uygulamayı yükle','📲 Install app'],
   ['🎲 Güçlü şifre oluştur','🎲 Create strong password'],['Güçlü şifre oluştur','Create strong password'],
   ['Bir uygulamanın şifresini yenile, kasana ve Drive yedeğine otomatik kaydolsun','Renew an app password; it is saved to your vault and Drive backup automatically'],
   ['Bir uygulamanın şifresini güçlü bir şifreyle yenile. Kaydettiğinde kasana eklenir ve Drive yedeği güncellenir.','Renew an app password with a strong one. When you save, it is added to your vault and the Drive backup is updated.'],
