@@ -39,7 +39,8 @@ Hazır şifre yöneticileri harika ama bazen tam kontrol istersin: verinin nered
 - **Uçtan uca şifreleme**: AES-256-GCM, anahtar ana şifreden PBKDF2-SHA256 ile **600.000 turda** türetilir
 - **Tamamen yerel**: Şifreleme ve çözme tarayıcının Web Crypto API'si ile cihazında yapılır; sayfa hiçbir yere bağlanamaz (CSP ile `connect-src 'none'`)
 - **Tek dosya**: HTML, CSS ve JavaScript tek `index.html` içinde, dış kütüphane yok
-- **Güçlü şifre üretici**: Uzunluk ve sembol seçimiyle, şifre gücü göstergesi
+- **Güçlü şifre oluşturucu**: Uygulamayı seç (Instagram, Gmail, Steam…), güçlü şifreyi üret ve kopyala, uygulamada değiştirdikten sonra tek tuşla kasana kaydet
+- **Şifre geçmişi ve güncelleme tarihi**: Her kaydın son güncelleme tarihi görünür, eski şifreler "Önceki şifreler" bölümünde saklanır
 - **Tek tuşla kopyalama**: Pano 30 saniye sonra otomatik temizlenir
 - **Otomatik kilit**: 5 dakika işlem yapılmazsa kasa kilitlenir
 - **Arama**: Başlık, adres, kullanıcı adı ve notlarda
@@ -94,7 +95,8 @@ Ready-made password managers are great, but sometimes you want full control: kno
 - **End-to-end encryption**: AES-256-GCM, with the key derived from your master password using PBKDF2-SHA256 at **600,000 iterations**
 - **Fully local**: Encryption and decryption happen on your device through the browser's Web Crypto API; the page cannot connect anywhere (CSP `connect-src 'none'`)
 - **Single file**: HTML, CSS and JavaScript in one `index.html`, no external libraries
-- **Strong password generator** with length and symbol options and a strength meter
+- **Strong password creator**: Pick the app (Instagram, Gmail, Steam…), generate and copy a strong password, then save it to your vault with one tap after changing it in the app
+- **Password history and last-updated date**: Each entry shows when it was last updated, and old passwords are kept under "Previous passwords"
 - **One-tap copy**: The clipboard is cleared automatically after 30 seconds
 - **Auto-lock** after 5 minutes of inactivity
 - **Search** across titles, websites, usernames and notes

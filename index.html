@@ -86,6 +86,21 @@ header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;backgroun
 .ip i.add{color:var(--accent)} .ip i.upd{color:var(--warn)}
 .ip.more{color:var(--muted);justify-content:center}
 .empty .cta{margin-top:16px}
+.gencard{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;margin:4px 0 10px;padding:14px 16px;border-radius:12px;border:1px dashed var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--panel))}
+.gencard b{font-size:15px}.gencard span{color:var(--muted);font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 10px;font-size:13px;border-radius:99px}
+.chip.on{background:var(--accent);color:#05221a;border-color:var(--accent)}
+.gbox{background:#0e141b;border:1px solid var(--line);border-radius:10px;padding:14px;overflow-x:auto}
+.gpass{font:600 18px/1.3 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.5px;word-break:break-all;color:var(--accent)}
+label.check{display:flex;gap:8px;align-items:center;color:var(--text);font-size:14px;margin-top:12px}
+label.check input{width:auto}
+.sync{font-size:13px;padding:8px 12px;border-radius:10px;margin:0 0 8px;background:var(--panel2);color:var(--muted)}
+.sync.ok{color:var(--accent)}.sync.bad{color:var(--danger);background:#2a1418}.sync.busy{color:var(--warn)}
+.hist{display:flex;gap:8px;align-items:center;font-size:13px;padding:4px 0}
+.hist code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:ui-monospace,Menlo,Consolas,monospace}
+.hist span{color:var(--muted)}
+
 
 .menu{position:relative}
 .menu .dd{position:absolute;right:0;top:calc(100% + 6px);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;min-width:230px;box-shadow:0 10px 30px #0008;z-index:10}
@@ -126,6 +141,7 @@ header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;backgroun
       <label>Kasa dosyası</label>
       <div id="fileBox" class="filebox">📁 Dosya seç (kasa.json)</div>
       <input id="fileInput" type="file" class="hidden">
+      <button id="driveOpenBtn" class="full hidden" style="margin-top:8px">☁️ Drive’dan aç</button>
       <details>
         <summary>Dosya yerine şifreli metni yapıştır</summary>
         <textarea id="pasteBox" placeholder='{"app":"sifre-kasasi",...}'></textarea>
@@ -166,6 +182,7 @@ header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;backgroun
             <button data-act="csv">📥 Şifreleri içe aktar</button>
             <button data-act="copyblob">📋 Şifreli metni kopyala</button>
             <button data-act="chpw">🔑 Ana şifreyi değiştir</button>
+            <button data-act="download" id="dlItem" class="hidden">📥 Dosya olarak indir</button>
             <button class="langBtn">🌐 English</button>
             <button data-act="lock">🔒 Kilitle</button>
           </div>
@@ -173,6 +190,8 @@ header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;backgroun
       </div>
       <input id="search" class="search" type="search" placeholder="Ara: site, kullanıcı adı, not…" autocomplete="off">
     </header>
+    <div id="syncLine" class="sync hidden"></div>
+    <button id="genCard" class="gencard"><b>🎲 Güçlü şifre oluştur</b><span>Bir uygulamanın şifresini yenile, kasana ve Drive yedeğine otomatik kaydolsun</span></button>
     <div id="list" class="list"></div>
   </section>
 </div>
@@ -195,6 +214,8 @@ header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;backgroun
       <button class="small" id="genBtn">🎲 Üret</button>
     </div>
     <label>Not</label><textarea id="fNote" placeholder="Güvenlik soruları, PIN, kurtarma kodları…"></textarea>
+    <div id="fMeta" class="muted small" style="margin-top:8px" data-raw></div>
+    <details id="fHistWrap" class="hidden"><summary>Önceki şifreler</summary><div id="fHist" data-raw></div></details>
     <div class="foot">
       <button id="delBtn" class="danger">Sil</button>
       <div class="r"><button id="cancelBtn" class="ghost">Vazgeç</button><button id="okBtn" class="primary">Tamam</button></div>
@@ -211,6 +232,36 @@ header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;backgroun
     <label>Tekrar</label><input id="cPw2" type="password" autocomplete="new-password">
     <div id="cErr" class="err"></div>
     <div class="foot"><div class="r"><button id="cCancel" class="ghost">Vazgeç</button><button id="cOk" class="primary">Değiştir</button></div></div>
+  </div>
+</div>
+
+<!-- Güçlü şifre oluştur -->
+<div id="genModal" class="modal hidden">
+  <div class="card">
+    <h3>🎲 Güçlü şifre oluştur</h3>
+    <p class="muted small">Bir uygulamanın şifresini güçlü bir şifreyle yenile. Kaydettiğinde kasana eklenir ve Drive yedeği güncellenir.</p>
+    <label>1. Hangi uygulama?</label>
+    <div id="gChips" class="chips" data-raw></div>
+    <input id="gApp" placeholder="Ya da uygulama adını yaz" autocomplete="off" style="margin-top:8px">
+    <label>Kullanıcı adı / e-posta</label>
+    <input id="gUser" list="gUsers" autocomplete="off" placeholder="ör. kullanici_adim">
+    <datalist id="gUsers"></datalist>
+    <div id="gExist" class="muted small" style="margin-top:6px"></div>
+    <label>2. Yeni şifren</label>
+    <div class="gbox"><code id="gPass" class="gpass" data-raw></code></div>
+    <div class="strength"><i id="gStr"></i></div>
+    <div class="gen">
+      <span id="gStrTxt"></span>
+      <span>Uzunluk <b id="gLenTxt">20</b></span>
+      <input id="gLen" type="range" min="12" max="48" value="20">
+      <label><input id="gSym" type="checkbox" checked> Semboller</label>
+    </div>
+    <div class="row" style="margin-top:10px"><button id="gCopy" class="primary">📋 Şifreyi kopyala</button><button id="gRe">🎲 Yeniden üret</button></div>
+    <label>3. Uygulamada değiştir</label>
+    <p id="gStep2" class="small" style="margin:0"></p>
+    <label class="check"><input id="gCopied" type="checkbox"> Şifreyi uygulamada değiştirdim</label>
+    <div id="gErr" class="err"></div>
+    <div class="foot"><div class="r"><button id="gCancel" class="ghost">Vazgeç</button><button id="gDone" class="primary" disabled>✅ Kaydet ve yedekle</button></div></div>
   </div>
 </div>
 
@@ -395,7 +446,7 @@ function render(){
     const t=e.title||e.url||'(başlıksız)';
     return `<div class="item" data-id="${esc(e.id)}">
       <div class="av" data-raw style="background:${colorFor(t)}">${esc(t.trim()[0]?.toLocaleUpperCase('tr')||'?')}</div>
-      <div class="meta" data-act="edit" data-raw><b>${esc(t)}</b><span>${esc(e.user||e.url||'')}</span></div>
+      <div class="meta" data-act="edit" data-raw><b>${esc(t)}</b><span>${esc(e.user||e.url||'')}${e.updated?' · '+fmtDate(e.updated):''}</span></div>
       <div class="acts">
         ${e.user?'<button class="small" data-act="cu" title="Kullanıcı adını kopyala">👤</button>':''}
         <button class="small primary" data-act="cp" title="Şifreyi kopyala">🔑 Kopyala</button>
@@ -420,17 +471,23 @@ function openEntry(en){
   $('#fPass').value=en?.pass||(en?'':genPass(+$('#genLen').value,$('#genSym').checked)); $('#fNote').value=en?.note||'';
   $('#fPass').type='password'; paintStr($('#passStr'),$('#fPass').value); show($('#delBtn'),!!en);
   show($('#entryModal'),1); setTimeout(()=>$('#fTitle').focus(),50);
+  $('#fMeta').textContent=en&&en.updated?L('Son güncelleme: ','Last updated: ')+fmtDate(en.updated):'';
+  const h=(en&&en.history)||[]; show($('#fHistWrap'),h.length>0); $('#fHistWrap').open=false;
+  $('#fHist').innerHTML=h.map((x,k)=>`<div class="hist"><code>${esc(x.pass)}</code><span>${esc(fmtDate(x.date))}</span><button class="small" data-hp="${k}">${L('Kopyala','Copy')}</button></div>`).join('');
 }
 function closeModals(){ show($('#entryModal'),0); show($('#pwModal'),0); show($('#impModal'),0); if(typeof IMP!=='undefined') IMP=null; }
 $('#addBtn').onclick=()=>openEntry(null);
 $('#cancelBtn').onclick=closeModals;
+$('#fHist').onclick=e=>{ const b=e.target.closest('[data-hp]'); if(b&&S.editing) copy(S.editing.history[+b.dataset.hp].pass); };
 $('#togglePass').onclick=()=>{ const p=$('#fPass'); p.type=p.type==='password'?'text':'password'; };
 $('#fPass').oninput=e=>paintStr($('#passStr'),e.target.value);
 $('#genLen').oninput=e=>$('#genLenTxt').textContent=e.target.value;
 $('#genBtn').onclick=()=>{ const p=$('#fPass'); p.value=genPass(+$('#genLen').value,$('#genSym').checked); p.type='text'; paintStr($('#passStr'),p.value); };
 document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>copy($('#'+b.dataset.copy).value));
 $('#okBtn').onclick=()=>{
-  const v={title:$('#fTitle').value.trim(),url:$('#fUrl').value.trim(),user:$('#fUser').value.trim(),pass:$('#fPass').value,note:$('#fNote').value,updated:new Date().toISOString()};
+  const now=new Date().toISOString(), E=S.editing;
+  const v={title:$('#fTitle').value.trim(),url:$('#fUrl').value.trim(),user:$('#fUser').value.trim(),pass:$('#fPass').value,note:$('#fNote').value,updated:(E&&E.pass===$('#fPass').value)?(E.updated||now):now};
+  if(E&&E.pass&&E.pass!==v.pass) v.history=[{pass:E.pass,date:E.updated||''},...(E.history||[])].slice(0,5);
   if(!v.title && !v.url) return toast('Bir başlık ya da web adresi gir.');
   if(S.editing) Object.assign(S.editing,v); else S.data.entries.push({id:uid(),...v});
   closeModals(); setDirty(true); render(); toast('Kaydedildi · dosyaya yazmak için 💾 Kaydet');
@@ -456,7 +513,6 @@ async function saveBlob(text,done){
   setTimeout(()=>URL.revokeObjectURL(a.href),4000); done&&done();
   toast(`“${name}” indirildi. Drive’daki eski dosyanın yerine yükle.`);
 }
-$('#saveBtn').onclick=async()=>{ const t=await encryptVault(); saveBlob(t,()=>setDirty(false)); };
 
 /* ---------- menü ---------- */
 $('#menuBtn').onclick=e=>{ e.stopPropagation(); show($('#menuDd'),$('#menuDd').classList.contains('hidden')); };
@@ -465,6 +521,7 @@ $('#menuDd').onclick=async e=>{
   const a=e.target.closest('[data-act]')?.dataset.act; if(!a) return; show($('#menuDd'),0);
   if(a==='lock') lock(false);
   if(a==='csv') openImport();
+  if(a==='download'){ const t=await encryptVault(); saveBlob(t,()=>setDirty(false)); }
   if(a==='copyblob'){ const t=await encryptVault(); try{ await navigator.clipboard.writeText(t); toast('Şifreli metin kopyalandı (ana şifre olmadan okunamaz).'); }catch(_){ toast('Kopyalanamadı.'); } }
   if(a==='chpw'){ ['#cPw','#cPw2'].forEach(s=>$(s).value=''); $('#cErr').textContent=''; paintStr($('#cStr'),''); show($('#pwModal'),1); }
 };
@@ -598,6 +655,114 @@ $('#impOk').onclick=()=>{
   toast(L(`${n} kayıt aktarıldı. Şimdi 💾 Kaydet, sonra dışa aktardığın CSV/ZIP dosyasını sil!`,`${n} entries imported. Now press 💾 Save, then delete the exported CSV/ZIP file!`));
 };
 
+/* ---------- güçlü şifre oluşturucu ---------- */
+const APPS=[['Instagram','instagram.com'],['Gmail / Google','accounts.google.com'],['Facebook','facebook.com'],['X (Twitter)','x.com'],['TikTok','tiktok.com'],['Steam','store.steampowered.com'],['Netflix','netflix.com'],['Apple ID','account.apple.com'],['Microsoft','account.microsoft.com']];
+const G={app:'',url:''};
+function fmtDate(iso){ if(!iso) return ''; try{ return new Date(iso).toLocaleDateString(LANG==='en'?'en-GB':'tr-TR',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(_){ return ''; } }
+function bitsOf(p){ let pool=0; if(/[a-z]/.test(p)) pool+=26; if(/[A-Z]/.test(p)) pool+=26; if(/\d/.test(p)) pool+=10; if(/[^a-zA-Z0-9]/.test(p)) pool+=20; return Math.round(p.length*Math.log2(Math.max(pool,1))); }
+function matchApp(e,app,url){ const a=app.toLowerCase().split(/[ /(]/)[0], h=hostOf(url); return (h && hostOf(e.url)===h) || (a && (e.title||'').toLowerCase().includes(a)); }
+function genNew(){
+  const p=genPass(+$('#gLen').value,$('#gSym').checked); $('#gPass').textContent=p; $('#gLenTxt').textContent=$('#gLen').value;
+  const b=bitsOf(p); const lbl=b<60?L('Zayıf','Weak'):b<80?L('İyi','Good'):b<100?L('Güçlü','Strong'):L('Çok güçlü','Very strong');
+  $('#gStrTxt').textContent=`${lbl} · ${b} bit`; paintStr($('#gStr'),p);
+}
+function pickApp(name,url){
+  G.app=name; G.url=url; $('#gApp').value=name;
+  document.querySelectorAll('#gChips button').forEach(b=>b.classList.toggle('on',b.dataset.name===name));
+  const ex=S.data.entries.filter(e=>matchApp(e,name,url));
+  $('#gUsers').innerHTML=ex.map(e=>`<option value="${esc(e.user||'')}">`).join('');
+  if(ex.length===1) $('#gUser').value=ex[0].user||'';
+  gHint();
+}
+function gHint(){
+  const name=$('#gApp').value.trim()||L('uygulama','the app');
+  const ex=S.data.entries.find(e=>matchApp(e,name,G.url)&&(e.user||'')===$('#gUser').value.trim());
+  $('#gExist').textContent=ex?L(`Kasanda bu hesap var · son güncelleme ${fmtDate(ex.updated)||'—'}. Eski şifre "önceki şifreler"e taşınacak.`,`This account is in your vault · last updated ${fmtDate(ex.updated)||'—'}. The old password will move to "previous passwords".`):'';
+  $('#gStep2').textContent=L(`${name} uygulamasında Ayarlar → Şifre değiştir ekranını aç ve kopyaladığın şifreyi yeni şifre olarak yapıştır.`,`In ${name}, open Settings → Change password and paste the copied password as the new one.`);
+}
+function openGen(){
+  $('#gChips').innerHTML=APPS.map(([n,u])=>`<button type="button" class="chip" data-name="${esc(n)}" data-url="${esc(u)}">${esc(n)}</button>`).join('');
+  $('#gApp').value=''; $('#gUser').value=''; G.app=''; G.url=''; $('#gErr').textContent=''; $('#gCopied').checked=false; $('#gDone').disabled=true;
+  genNew(); gHint(); show($('#genModal'),1);
+}
+$('#gChips').onclick=e=>{ const b=e.target.closest('.chip'); if(b) pickApp(b.dataset.name,b.dataset.url); };
+$('#gApp').oninput=()=>{ G.app=$('#gApp').value.trim(); G.url=''; document.querySelectorAll('#gChips button').forEach(b=>b.classList.remove('on')); gHint(); };
+$('#gUser').oninput=gHint;
+$('#gLen').oninput=genNew; $('#gSym').onchange=genNew; $('#gRe').onclick=genNew;
+$('#gCopy').onclick=()=>{ copy($('#gPass').textContent); $('#gCopied').checked=true; $('#gDone').disabled=false; };
+$('#gCopied').onchange=()=>{ $('#gDone').disabled=!$('#gCopied').checked; };
+$('#gCancel').onclick=()=>show($('#genModal'),0);
+$('#gDone').onclick=async()=>{
+  const app=$('#gApp').value.trim(), user=$('#gUser').value.trim(), pass=$('#gPass').textContent;
+  if(!app) return $('#gErr').textContent=L('Uygulamayı seç ya da adını yaz.','Choose the app or type its name.');
+  const now=new Date().toISOString();
+  let e=S.data.entries.find(x=>matchApp(x,app,G.url)&&(x.user||'')===user);
+  if(e){ if(e.pass&&e.pass!==pass) e.history=[{pass:e.pass,date:e.updated||''},...(e.history||[])].slice(0,5); Object.assign(e,{pass,updated:now,url:e.url||G.url}); }
+  else S.data.entries.push({id:uid(),title:app,url:G.url,user,pass,note:'',updated:now});
+  show($('#genModal'),0); setDirty(true); render();
+  if(await driveReady()) driveBackup(L(`${app} şifresi kaydedildi`,`${app} password saved`));
+  else toast(L(`${app} şifresi kasaya eklendi. Şimdi 💾 Kaydet’e bas.`,`${app} password added to the vault. Now press 💾 Save.`));
+};
+$('#genCard').onclick=openGen;
+
+/* ---------- Google Drive yedeği (yalnızca Claude içinde) ---------- */
+const GD='Google Drive', FOLDER='Şifre Kasası', LISTNAME='Şifre Listesi (şifresiz)';
+let mcpP=null, driveBusy=false;
+function getMcp(){ if(!mcpP) mcpP=(window.claude?.use?window.claude.use('mcp'):Promise.resolve(null)).catch(()=>null); return mcpP; }
+async function driveReady(){ return !!(await getMcp()); }
+async function gd(tool,input){ const m=await getMcp(); const r=await m.callTool(GD,tool,input,{cache:false}); return r.payload||{}; }
+function driveErr(err){
+  const c=err&&err.code, msg=String(err&&err.message||'');
+  if(c==='needs_reauth'||c==='server_not_connected'||c==='selection_required') return L('Google Drive bağlı değil. claude.ai → Ayarlar → Bağlayıcılar’dan Google Drive’ı bağla.','Google Drive is not connected. Connect it in claude.ai → Settings → Connectors.');
+  if(c==='not_in_manifest'||c==='approval_required'||c==='consent_required') return L('Bu sayfanın Google Drive’a erişmesine izin vermedin. Tekrar denediğinde izin iste.','You have not allowed this page to use Google Drive. Allow it when asked on the next try.');
+  if(c==='blocked_by_policy') return L('Kuruluş ayarları bu Drive işlemine izin vermiyor.','Your organization does not allow this Drive action.');
+  if(c==='server_unavailable'||c==='rate_limited') return L('Google Drive şu an yanıt vermiyor. Biraz sonra 💾 Kaydet ile tekrar dene.','Google Drive is not responding. Try 💾 Save again in a moment.');
+  if(c==='tool_error' && /permission|izin|scope|insufficient/i.test(msg)) return L('Google Drive bağlantında yazma izni yok. claude.ai → Ayarlar → Bağlayıcılar’dan Google Drive’ı yeniden bağla ve dosya oluşturma iznini ver.','Your Google Drive connection has no write permission. Reconnect Google Drive in claude.ai → Settings → Connectors and allow creating files.');
+  return L('Drive yedeği alınamadı: ','Drive backup failed: ')+(msg.slice(0,140)||c||'?');
+}
+function setSync(t,cls){ const s=$('#syncLine'); s.textContent=t; s.className='sync '+(cls||''); show(s,!!t); }
+function listCsv(){
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const rows=[[L('Uygulama','App'),L('Kullanıcı adı','Username'),L('Web adresi','Website'),L('Son güncelleme','Last updated')]];
+  [...S.data.entries].sort((a,b)=>(a.title||'').localeCompare(b.title||'','tr')).forEach(e=>rows.push([e.title,e.user,e.url,fmtDate(e.updated)]));
+  return rows.map(r=>r.map(q).join(',')).join('\n');
+}
+async function driveBackup(prefix){
+  if(driveBusy) return; driveBusy=true;
+  setSync(L('☁️ Drive’a yedekleniyor…','☁️ Backing up to Drive…'),'busy');
+  try{
+    let f=await gd('search_files',{query:`title = '${FOLDER}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,excludeContentSnippets:true,pageSize:5});
+    let folderId=f.files&&f.files[0]&&f.files[0].id;
+    if(!folderId){ const c=await gd('create_file',{title:FOLDER,contentMimeType:'application/vnd.google-apps.folder'}); folderId=c.id||c.file?.id; }
+    if(!folderId) throw {code:'tool_error',message:'folder'};
+    const old=(await gd('search_files',{query:`parentId = '${folderId}' and trashed = false`,excludeContentSnippets:true,pageSize:50})).files||[];
+    const blob=await encryptVault();
+    await gd('create_file',{title:'kasa.json',parentId:folderId,textContent:blob,contentMimeType:'application/json',disableConversionToGoogleType:true});
+    await gd('create_file',{title:LISTNAME,parentId:folderId,textContent:listCsv(),contentMimeType:'text/csv'});
+    for(const o of old){ if(o.title==='kasa.json'||o.title===LISTNAME){ try{ await gd('trash_file',{fileId:o.id}); }catch(_){} } }
+    setDirty(false);
+    const t=new Date().toLocaleTimeString(LANG==='en'?'en-GB':'tr-TR',{hour:'2-digit',minute:'2-digit'});
+    setSync(L(`☁️ Drive’a yedeklendi · ${t} · “${FOLDER}” klasörü`,`☁️ Backed up to Drive · ${t} · “${FOLDER}” folder`),'ok');
+    toast((prefix?prefix+' · ':'')+L('Drive’a yedeklendi ✅','Backed up to Drive ✅'));
+  }catch(err){
+    setSync(driveErr(err),'bad'); toast(L('Drive yedeği alınamadı. Ayrıntı kasanın üstünde.','Drive backup failed. Details above the list.'));
+  }finally{ driveBusy=false; }
+}
+async function driveOpen(){
+  $('#lockErr').textContent='';
+  try{
+    const r=await gd('search_files',{query:`title = 'kasa.json' and trashed = false`,orderBy:'modifiedTime desc',excludeContentSnippets:true,pageSize:5});
+    const f=(r.files||[])[0]; if(!f) return $('#lockErr').textContent=L('Drive’da kasa.json bulunamadı. Önce bir kez 💾 Kaydet ile yedekle ya da dosya seç.','No kasa.json found on Drive. Back up once with 💾 Save, or choose a file.');
+    const d=await gd('download_file_content',{fileId:f.id});
+    const bin=atob(d.content||''); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+    loadedText=new TextDecoder().decode(u); S.fileName='kasa.json';
+    $('#fileBox').textContent=`☁️ Drive · kasa.json · ${fmtDate(f.modifiedTime)}`; $('#fileBox').classList.add('ok'); $('#openPw').focus();
+  }catch(err){ $('#lockErr').textContent=driveErr(err); }
+}
+$('#driveOpenBtn').onclick=()=>busy($('#driveOpenBtn'),L('Drive’dan alınıyor…','Fetching from Drive…'),driveOpen);
+$('#saveBtn').onclick=async()=>{ if(await driveReady()) return driveBackup(''); const t=await encryptVault(); saveBlob(t,()=>setDirty(false)); };
+getMcp().then(m=>{ if(m){ show($('#driveOpenBtn'),1); $('#saveBtn').textContent=L('☁️ Kaydet','☁️ Save'); show($('#dlItem'),1); } });
+
 /* ---------- otomatik kilit ---------- */
 let idleT;
 function resetTimer(){ clearTimeout(idleT); if(S.key) idleT=setTimeout(()=>lock(true),AUTOLOCK_MS); }
@@ -642,6 +807,14 @@ const I18N = [
   ['Kaydedilmemiş değişiklikler silinsin mi?','Discard unsaved changes?'],
   ['Eşleşen kayıt yok.','No matching entries.'],['Kasa boş.','The vault is empty.'],
   ['📥 Şifreleri içe aktar','📥 Import passwords'],
+  ['🎲 Güçlü şifre oluştur','🎲 Create strong password'],['Güçlü şifre oluştur','Create strong password'],
+  ['Bir uygulamanın şifresini yenile, kasana ve Drive yedeğine otomatik kaydolsun','Renew an app password; it is saved to your vault and Drive backup automatically'],
+  ['Bir uygulamanın şifresini güçlü bir şifreyle yenile. Kaydettiğinde kasana eklenir ve Drive yedeği güncellenir.','Renew an app password with a strong one. When you save, it is added to your vault and the Drive backup is updated.'],
+  ['1. Hangi uygulama?','1. Which app?'],['Ya da uygulama adını yaz','Or type the app name'],['ör. kullanici_adim','e.g. my_username'],
+  ['2. Yeni şifren','2. Your new password'],['📋 Şifreyi kopyala','📋 Copy password'],['🎲 Yeniden üret','🎲 Regenerate'],
+  ['3. Uygulamada değiştir','3. Change it in the app'],['Şifreyi uygulamada değiştirdim','I changed the password in the app'],
+  ['✅ Kaydet ve yedekle','✅ Save and back up'],['☁️ Drive’dan aç','☁️ Open from Drive'],['📥 Dosya olarak indir','📥 Download as file'],
+  ['☁️ Kaydet','☁️ Save'],['Önceki şifreler','Previous passwords'],
   ['Başka bir yerde kayıtlı şifrelerini tek seferde kasana taşı. Dosya sadece bu cihazda okunur, hiçbir yere gönderilmez.','Move passwords saved elsewhere into your vault in one go. The file is read only on this device and never sent anywhere.'],
   ['📄 Dosya seç (CSV ya da iPhone ZIP)','📄 Choose file (CSV or iPhone ZIP)'],
   ['Ya da metin olarak yapıştır','Or paste as text'],['Her satıra bir şifre: site, kullanıcı adı, şifre','One password per line: site, username, password'],
