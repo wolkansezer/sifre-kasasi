@@ -74,6 +74,19 @@ header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;backgroun
 .acts{display:flex;gap:6px;flex:none}
 .empty{text-align:center;color:var(--muted);padding:40px 10px}
 .langBtn{white-space:nowrap;flex:none}
+.guide ul{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--muted);display:grid;gap:6px}
+.guide b{color:var(--text)}
+.impSum{margin-top:14px;font-size:14px}
+.impList{margin-top:8px;max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.ip{display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px}
+.ip:last-child{border-bottom:0}
+.ip b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ip span{color:var(--muted);max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ip i{font-style:normal;font-weight:700;width:18px;text-align:center}
+.ip i.add{color:var(--accent)} .ip i.upd{color:var(--warn)}
+.ip.more{color:var(--muted);justify-content:center}
+.empty .cta{margin-top:16px}
+
 .menu{position:relative}
 .menu .dd{position:absolute;right:0;top:calc(100% + 6px);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;min-width:230px;box-shadow:0 10px 30px #0008;z-index:10}
 .menu .dd button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:10px 12px}
@@ -150,7 +163,7 @@ header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;backgroun
         <div class="menu">
           <button id="menuBtn">⋯</button>
           <div id="menuDd" class="dd hidden">
-            <button data-act="csv">📥 CSV içe aktar (Chrome vb.)</button>
+            <button data-act="csv">📥 Şifreleri içe aktar</button>
             <button data-act="copyblob">📋 Şifreli metni kopyala</button>
             <button data-act="chpw">🔑 Ana şifreyi değiştir</button>
             <button class="langBtn">🌐 English</button>
@@ -161,7 +174,6 @@ header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;backgroun
       <input id="search" class="search" type="search" placeholder="Ara: site, kullanıcı adı, not…" autocomplete="off">
     </header>
     <div id="list" class="list"></div>
-    <input id="csvInput" type="file" accept=".csv,text/csv" class="hidden">
   </section>
 </div>
 
@@ -199,6 +211,41 @@ header.top{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;backgroun
     <label>Tekrar</label><input id="cPw2" type="password" autocomplete="new-password">
     <div id="cErr" class="err"></div>
     <div class="foot"><div class="r"><button id="cCancel" class="ghost">Vazgeç</button><button id="cOk" class="primary">Değiştir</button></div></div>
+  </div>
+</div>
+
+<!-- İçe aktarma -->
+<div id="impModal" class="modal hidden">
+  <div class="card">
+    <h3>📥 Şifreleri içe aktar</h3>
+    <p class="muted small">Başka bir yerde kayıtlı şifrelerini tek seferde kasana taşı. Dosya sadece bu cihazda okunur, hiçbir yere gönderilmez.</p>
+    <div id="impDrop" class="filebox">📄 Dosya seç (CSV ya da iPhone ZIP)</div>
+    <input id="impFile" type="file" accept=".csv,.zip,.txt,text/csv,application/zip" class="hidden">
+    <details>
+      <summary>Ya da metin olarak yapıştır</summary>
+      <p class="muted small">Her satıra bir şifre: site, kullanıcı adı, şifre</p>
+      <textarea id="impText" placeholder="gmail.com, ornek@gmail.com, Sifre123&#10;instagram.com, kullanici_adim, Sifre456"></textarea>
+      <button id="impTextBtn" class="small" style="margin-top:8px">Metni oku</button>
+    </details>
+    <details class="guide">
+      <summary>Şifrelerimi nereden dışa aktarırım?</summary>
+      <ul>
+        <li><b>iPhone (Safari / Şifreler)</b>: Ayarlar → Uygulamalar → Safari → Geçmiş ve Web Sitesi Verileri bölümünde Dışa Aktar → sadece Parolalar. İnen ZIP dosyasını açmadan doğrudan burada seç.</li>
+        <li><b>Mac</b>: Şifreler uygulaması → Dosya → Tüm Şifreleri Dosyaya Aktar.</li>
+        <li><b>Chrome</b>: Ayarlar → Google Şifre Yöneticisi → Ayarlar → Dosyayı indir (dışa aktar).</li>
+        <li><b>Google hesabı</b>: passwords.google.com → Ayarlar → Şifreleri dışa aktar.</li>
+        <li><b>Edge</b>: Ayarlar → Profiller → Şifreler → ⋯ → Şifreleri dışa aktar.</li>
+        <li><b>Firefox</b>: about:logins → ⋯ → Girişleri dışa aktar.</li>
+      </ul>
+      <p class="muted small">Menü adları sürüme göre biraz farklı olabilir.</p>
+    </details>
+    <div id="impPrev" class="hidden">
+      <div id="impSum" class="impSum"></div>
+      <div id="impList" class="impList" data-raw></div>
+    </div>
+    <div id="impErr" class="err"></div>
+    <div class="notice small">Aktarma bitince dışa aktardığın CSV/ZIP dosyasını sil. O dosyada şifreler açık yazılıdır.</div>
+    <div class="foot"><div class="r"><button id="impCancel" class="ghost">Vazgeç</button><button id="impOk" class="primary" disabled>İçe aktar</button></div></div>
   </div>
 </div>
 
@@ -342,7 +389,7 @@ function render(){
   const items=q?all.filter(e=>[e.title,e.url,e.user,e.note].join(' ').toLocaleLowerCase('tr').includes(q)):all;
   $('#count').textContent=S.data.entries.length;
   if(!items.length){
-    $('#list').innerHTML=`<div class="empty">${q?'Eşleşen kayıt yok.':'Kasa boş.<br><br>“+ Yeni” ile ilk şifreni ekle ya da ⋯ menüsünden CSV içe aktar.'}</div>`; return;
+    $('#list').innerHTML=`<div class="empty">${q?'Eşleşen kayıt yok.':'Kasa boş.<br><br>“+ Yeni” ile tek tek ekle ya da tüm şifrelerini tek seferde aktar.<br><button class="primary cta" data-act="import">📥 Şifrelerimi içe aktar</button>'}</div>`; return;
   }
   $('#list').innerHTML=items.map(e=>{
     const t=e.title||e.url||'(başlıksız)';
@@ -358,6 +405,7 @@ function render(){
 $('#search').oninput=render;
 $('#list').onclick=e=>{
   const b=e.target.closest('[data-act]'); if(!b) return;
+  if(b.dataset.act==='import') return openImport();
   const id=b.closest('.item').dataset.id; const en=S.data.entries.find(x=>x.id===id); if(!en) return;
   if(b.dataset.act==='cp') copy(en.pass||'');
   else if(b.dataset.act==='cu') copy(en.user||'');
@@ -373,7 +421,7 @@ function openEntry(en){
   $('#fPass').type='password'; paintStr($('#passStr'),$('#fPass').value); show($('#delBtn'),!!en);
   show($('#entryModal'),1); setTimeout(()=>$('#fTitle').focus(),50);
 }
-function closeModals(){ show($('#entryModal'),0); show($('#pwModal'),0); }
+function closeModals(){ show($('#entryModal'),0); show($('#pwModal'),0); show($('#impModal'),0); if(typeof IMP!=='undefined') IMP=null; }
 $('#addBtn').onclick=()=>openEntry(null);
 $('#cancelBtn').onclick=closeModals;
 $('#togglePass').onclick=()=>{ const p=$('#fPass'); p.type=p.type==='password'?'text':'password'; };
@@ -416,7 +464,7 @@ document.addEventListener('click',()=>show($('#menuDd'),0));
 $('#menuDd').onclick=async e=>{
   const a=e.target.closest('[data-act]')?.dataset.act; if(!a) return; show($('#menuDd'),0);
   if(a==='lock') lock(false);
-  if(a==='csv') $('#csvInput').click();
+  if(a==='csv') openImport();
   if(a==='copyblob'){ const t=await encryptVault(); try{ await navigator.clipboard.writeText(t); toast('Şifreli metin kopyalandı (ana şifre olmadan okunamaz).'); }catch(_){ toast('Kopyalanamadı.'); } }
   if(a==='chpw'){ ['#cPw','#cPw2'].forEach(s=>$(s).value=''); $('#cErr').textContent=''; paintStr($('#cStr'),''); show($('#pwModal'),1); }
 };
@@ -434,34 +482,120 @@ $('#cOk').onclick=()=>busy($('#cOk'),'Değiştiriliyor…',async()=>{
 
 /* ---------- CSV içe aktarma ---------- */
 function parseCSV(txt){
+  const first=(txt.split(/\r?\n/)[0]||'').replace(/"[^"]*"/g,'');
+  const D=first.includes(',')?',':first.includes(';')?';':first.includes('\t')?'\t':',';
   const rows=[]; let row=[], f='', q=false;
   for(let i=0;i<txt.length;i++){
     const c=txt[i];
     if(q){ if(c==='"'){ if(txt[i+1]==='"'){ f+='"'; i++; } else q=false; } else f+=c; }
     else if(c==='"') q=true;
-    else if(c===','||c===';'){ row.push(f); f=''; }
+    else if(c===D){ row.push(f); f=''; }
     else if(c==='\n'||c==='\r'){ if(c==='\r'&&txt[i+1]==='\n') i++; row.push(f); rows.push(row); row=[]; f=''; }
     else f+=c;
   }
   if(f||row.length){ row.push(f); rows.push(row); }
   return rows.filter(r=>r.some(x=>x.trim()));
 }
-$('#csvInput').onchange=async e=>{
-  const f=e.target.files[0]; if(!f) return; e.target.value='';
-  const rows=parseCSV((await f.text()).replace(/^\uFEFF/,'')); if(rows.length<2) return toast('CSV boş görünüyor.');
-  const h=rows[0].map(x=>x.trim().toLowerCase());
+/* ---------- toplu içe aktarma ---------- */
+const L=(t,e)=>(typeof LANG!=='undefined'&&LANG==='en')?e:t;
+let IMP=null;
+function hostOf(u){ try{ return new URL(/^[a-z]+:\/\//i.test(u)?u:'https://'+u).hostname.replace(/^www\./,''); }catch(_){ return ''; } }
+function entryKey(e){ return ((hostOf(e.url)||e.title||'').toLowerCase())+'|'+(e.user||'').toLowerCase(); }
+function rowsToEntries(rows){
+  if(!rows.length) return [];
+  const h=rows[0].map(x=>x.trim().toLowerCase().replace(/^﻿/,''));
   const idx=(...n)=>h.findIndex(x=>n.includes(x));
-  const iT=idx('name','title','başlık','ad'), iU=idx('url','login_uri','website','web adresi'), iN=idx('username','login_username','user','email','kullanıcı adı'),
-        iP=idx('password','login_password','şifre','parola'), iO=idx('note','notes','not');
-  if(iP<0) return toast('CSV’de “password” sütunu bulunamadı.');
-  let n=0;
-  for(const r of rows.slice(1)){
-    const pass=r[iP]||''; if(!pass) continue;
-    let url=iU>=0?r[iU]||'':''; let title=iT>=0?r[iT]||'':'';
-    if(!title&&url){ try{ title=new URL(url).hostname.replace(/^www\./,''); }catch(_){ title=url; } }
-    S.data.entries.push({id:uid(),title,url,user:iN>=0?r[iN]||'':'',pass,note:iO>=0?r[iO]||'':'',updated:new Date().toISOString()}); n++;
+  let iT=idx('name','title','başlık','ad','site'), iU=idx('url','login_uri','website','web adresi','origin','hostname','origin_url','web sitesi'),
+      iN=idx('username','login_username','user','email','e-mail','e-posta','kullanıcı adı','kullanici','login'),
+      iP=idx('password','login_password','şifre','sifre','parola','pass'), iO=idx('note','notes','not','comments','extra'), body=rows.slice(1);
+  if(iP<0){ // başlık satırı yok: site, kullanıcı, şifre (veya site, şifre)
+    body=rows; const w=Math.max(...rows.map(r=>r.length));
+    if(w>=3){ iU=0; iN=1; iP=2; iO=w>=4?3:-1; } else if(w===2){ iU=0; iN=-1; iP=1; } else return [];
+    iT=-1;
   }
-  setDirty(true); render(); toast(`${n} kayıt içe aktarıldı. 💾 Kaydet’i unutma, sonra CSV dosyasını sil!`);
+  const out=[];
+  for(const r of body){
+    const g=i=>i>=0?(r[i]||'').trim():'';
+    const p=iP>=0?(r[iP]||''):''; if(!p.trim()) continue;
+    let url=g(iU), title=g(iT);
+    if(!title) title=hostOf(url)||url;
+    if(!title && !url) continue;
+    out.push({title,url,user:g(iN),pass:p,note:g(iO)});
+  }
+  return out;
+}
+function parseLines(txt){
+  const lines=txt.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  const rows=lines.map(l=>{
+    for(const sep of ['\t',' | ','|',';',',']) if(l.includes(sep)){ const a=l.split(sep).map(x=>x.trim()); return a.length>3?[a[0],a[1],a.slice(2).join(sep.trim()||sep)]:a; }
+    return l.split(/\s+/);
+  });
+  return rowsToEntries(rows);
+}
+async function readZipCsv(buf){
+  const u=new Uint8Array(buf), dv=new DataView(buf);
+  let eo=-1; for(let i=u.length-22;i>=Math.max(0,u.length-65557);i--){ if(dv.getUint32(i,true)===0x06054b50){ eo=i; break; } }
+  if(eo<0) throw new Error('zip');
+  let p=dv.getUint32(eo+16,true); const n=dv.getUint16(eo+10,true); const files=[];
+  for(let k=0;k<n;k++){
+    if(dv.getUint32(p,true)!==0x02014b50) break;
+    const m=dv.getUint16(p+10,true), cs=dv.getUint32(p+20,true), nl=dv.getUint16(p+28,true), xl=dv.getUint16(p+30,true), cl=dv.getUint16(p+32,true), lo=dv.getUint32(p+42,true);
+    files.push({name:new TextDecoder().decode(u.subarray(p+46,p+46+nl)),m,cs,lo}); p+=46+nl+xl+cl;
+  }
+  const csvs=files.filter(f=>/\.csv$/i.test(f.name)&&!/(^|\/)__MACOSX\//.test(f.name));
+  const f=csvs.find(f=>/pass|parola|şifre/i.test(f.name))||csvs[0]; if(!f) throw new Error('nocsv');
+  const st=f.lo+30+dv.getUint16(f.lo+26,true)+dv.getUint16(f.lo+28,true), data=u.subarray(st,st+f.cs);
+  if(f.m===0) return new TextDecoder().decode(data);
+  if(f.m!==8||typeof DecompressionStream==='undefined') throw new Error('zip');
+  return await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+}
+function openImport(){
+  IMP=null; $('#impText').value=''; $('#impErr').textContent=''; show($('#impPrev'),0); $('#impOk').disabled=true;
+  $('#impDrop').textContent=L('📄 Dosya seç (CSV ya da iPhone ZIP)','📄 Choose file (CSV or iPhone ZIP)'); $('#impDrop').classList.remove('ok');
+  show($('#impModal'),1);
+}
+function preview(list,src){
+  $('#impErr').textContent='';
+  if(!list.length){ show($('#impPrev'),0); $('#impOk').disabled=true; $('#impErr').textContent=L('Bu kaynakta aktarılacak şifre bulunamadı.','No passwords to import were found in this source.'); return; }
+  const have=new Map(S.data.entries.map(e=>[entryKey(e),e])), seen=new Set(); let add=0, upd=0, skip=0; const plan=[];
+  for(const e of list){
+    const k=entryKey(e); if(seen.has(k)){ skip++; continue; } seen.add(k);
+    const old=have.get(k);
+    if(!old){ add++; plan.push({t:'add',e}); }
+    else if(old.pass!==e.pass){ upd++; plan.push({t:'upd',e,old}); }
+    else skip++;
+  }
+  IMP=plan;
+  $('#impSum').textContent=L(`${src}: ${list.length} şifre bulundu · ${add} yeni, ${upd} güncellenecek, ${skip} zaten var`,`${src}: ${list.length} passwords found · ${add} new, ${upd} to update, ${skip} already saved`);
+  $('#impList').innerHTML=plan.slice(0,50).map(p=>`<div class="ip"><b>${esc(p.e.title)}</b><span>${esc(p.e.user||'—')}</span><i class="${p.t}">${p.t==='add'?'+':'↻'}</i></div>`).join('')+(plan.length>50?`<div class="ip more">+${plan.length-50}</div>`:'');
+  show($('#impPrev'),1); $('#impOk').disabled=!plan.length;
+  $('#impOk').textContent=plan.length?L(`${plan.length} kaydı içe aktar`,`Import ${plan.length} entries`):L('Yeni kayıt yok','Nothing new');
+}
+$('#impDrop').onclick=()=>$('#impFile').click();
+$('#impFile').onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return; e.target.value='';
+  $('#impDrop').textContent='✅ '+f.name; $('#impDrop').classList.add('ok');
+  try{
+    let txt;
+    if(/\.zip$/i.test(f.name)||f.type.includes('zip')) txt=await readZipCsv(await f.arrayBuffer());
+    else txt=await f.text();
+    preview(rowsToEntries(parseCSV(txt.replace(/^﻿/,''))), f.name);
+  }catch(err){
+    show($('#impPrev'),0); $('#impOk').disabled=true;
+    $('#impErr').textContent=err.message==='nocsv'?L('ZIP içinde şifre dosyası (CSV) bulunamadı.','No password file (CSV) found in the ZIP.'):L('Dosya okunamadı. CSV ya da ZIP dosyası seç.','Could not read the file. Choose a CSV or ZIP file.');
+  }
+};
+$('#impTextBtn').onclick=()=>preview(parseLines($('#impText').value),L('Yapıştırılan metin','Pasted text'));
+$('#impCancel').onclick=()=>{ IMP=null; show($('#impModal'),0); };
+$('#impOk').onclick=()=>{
+  if(!IMP||!IMP.length) return; const now=new Date().toISOString();
+  for(const p of IMP){
+    if(p.t==='add') S.data.entries.push({id:uid(),...p.e,updated:now});
+    else Object.assign(p.old,{pass:p.e.pass,note:p.old.note||p.e.note,url:p.old.url||p.e.url,updated:now});
+  }
+  const n=IMP.length; IMP=null; show($('#impModal'),0); $('#impText').value='';
+  setDirty(true); render();
+  toast(L(`${n} kayıt aktarıldı. Şimdi 💾 Kaydet, sonra dışa aktardığın CSV/ZIP dosyasını sil!`,`${n} entries imported. Now press 💾 Save, then delete the exported CSV/ZIP file!`));
 };
 
 /* ---------- otomatik kilit ---------- */
@@ -487,7 +621,7 @@ const I18N = [
   ['Kasa kaydedilmemiş değişikliklerle kilitlendi. Değişiklikler şifreli olarak bekliyor.','The vault was locked with unsaved changes. They are kept encrypted for now.'],
   ['Şifreli dosyayı indir','Download encrypted file'],['Yok say','Discard'],
   ['🔐 Kasam','🔐 My vault'],['kaydedilmedi','unsaved'],['+ Yeni','+ New'],['💾 Kaydet','💾 Save'],
-  ['📥 CSV içe aktar (Chrome vb.)','📥 Import CSV (Chrome etc.)'],['📋 Şifreli metni kopyala','📋 Copy encrypted text'],
+  ['📋 Şifreli metni kopyala','📋 Copy encrypted text'],
   ['🔑 Ana şifreyi değiştir','🔑 Change master password'],['🔒 Kilitle','🔒 Lock'],
   ['Ara: site, kullanıcı adı, not…','Search: site, username, note…'],
   ['Yeni kayıt','New entry'],['Kaydı düzenle','Edit entry'],['Başlık','Title'],['ör. Gmail, Instagram','e.g. Gmail, Instagram'],
@@ -507,7 +641,22 @@ const I18N = [
   ['Açılıyor…','Opening…'],['Oluşturuluyor…','Creating…'],['Değiştiriliyor…','Changing…'],
   ['Kaydedilmemiş değişiklikler silinsin mi?','Discard unsaved changes?'],
   ['Eşleşen kayıt yok.','No matching entries.'],['Kasa boş.','The vault is empty.'],
-  ['“+ Yeni” ile ilk şifreni ekle ya da ⋯ menüsünden CSV içe aktar.','Add your first password with “+ New” or import a CSV from the ⋯ menu.'],
+  ['📥 Şifreleri içe aktar','📥 Import passwords'],
+  ['Başka bir yerde kayıtlı şifrelerini tek seferde kasana taşı. Dosya sadece bu cihazda okunur, hiçbir yere gönderilmez.','Move passwords saved elsewhere into your vault in one go. The file is read only on this device and never sent anywhere.'],
+  ['📄 Dosya seç (CSV ya da iPhone ZIP)','📄 Choose file (CSV or iPhone ZIP)'],
+  ['Ya da metin olarak yapıştır','Or paste as text'],['Her satıra bir şifre: site, kullanıcı adı, şifre','One password per line: site, username, password'],
+  ['Metni oku','Read text'],['Şifrelerimi nereden dışa aktarırım?','Where do I export my passwords from?'],
+  ['iPhone (Safari / Şifreler)','iPhone (Safari / Passwords)'],['Google hesabı','Google account'],
+  [': Ayarlar → Uygulamalar → Safari → Geçmiş ve Web Sitesi Verileri bölümünde Dışa Aktar → sadece Parolalar. İnen ZIP dosyasını açmadan doğrudan burada seç.',': Settings → Apps → Safari → Export (under History and Website Data) → Passwords only. Choose the downloaded ZIP here directly, no need to unzip.'],
+  [': Şifreler uygulaması → Dosya → Tüm Şifreleri Dosyaya Aktar.',': Passwords app → File → Export All Passwords to File.'],
+  [': Ayarlar → Google Şifre Yöneticisi → Ayarlar → Dosyayı indir (dışa aktar).',': Settings → Google Password Manager → Settings → Download file (export).'],
+  [': passwords.google.com → Ayarlar → Şifreleri dışa aktar.',': passwords.google.com → Settings → Export passwords.'],
+  [': Ayarlar → Profiller → Şifreler → ⋯ → Şifreleri dışa aktar.',': Settings → Profiles → Passwords → ⋯ → Export passwords.'],
+  [': about:logins → ⋯ → Girişleri dışa aktar.',': about:logins → ⋯ → Export logins.'],
+  ['Menü adları sürüme göre biraz farklı olabilir.','Menu names may differ slightly between versions.'],
+  ['Aktarma bitince dışa aktardığın CSV/ZIP dosyasını sil. O dosyada şifreler açık yazılıdır.','When you are done, delete the exported CSV/ZIP file. It contains your passwords in plain text.'],
+  ['İçe aktar','Import'],['📥 Şifrelerimi içe aktar','📥 Import my passwords'],
+  ['“+ Yeni” ile tek tek ekle ya da tüm şifrelerini tek seferde aktar.','Add them one by one with “+ New”, or bring all your passwords in at once.'],
   ['(başlıksız)','(untitled)'],['Kullanıcı adını kopyala','Copy username'],['Şifreyi kopyala','Copy password'],['🔑 Kopyala','🔑 Copy'],
   ['Bir başlık ya da web adresi gir.','Enter a title or website.'],
   ['Kaydedildi · dosyaya yazmak için 💾 Kaydet','Saved · press 💾 Save to write the file'],

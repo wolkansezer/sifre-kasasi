@@ -43,7 +43,7 @@ Hazır şifre yöneticileri harika ama bazen tam kontrol istersin: verinin nered
 - **Tek tuşla kopyalama**: Pano 30 saniye sonra otomatik temizlenir
 - **Otomatik kilit**: 5 dakika işlem yapılmazsa kasa kilitlenir
 - **Arama**: Başlık, adres, kullanıcı adı ve notlarda
-- **CSV içe aktarma**: Chrome, Edge ve diğer tarayıcıların dışa aktarımlarından
+- **Toplu içe aktarma**: iPhone/Safari ZIP dosyası, Chrome, Edge, Firefox, Google hesabı ve Mac dışa aktarımları tek seferde; ya da metin olarak yapıştır. Aynı kayıtları atlar, değişen şifreleri günceller
 - **Ana şifre değiştirme**
 - **Mobil uyumlu**: iPhone ve Android'de ana ekrana eklenebilir
 - **Türkçe ve İngilizce arayüz** (🌐 butonuyla değiştirilir), koyu tema
@@ -98,7 +98,7 @@ Ready-made password managers are great, but sometimes you want full control: kno
 - **One-tap copy**: The clipboard is cleared automatically after 30 seconds
 - **Auto-lock** after 5 minutes of inactivity
 - **Search** across titles, websites, usernames and notes
-- **CSV import** from Chrome, Edge and other browser exports
+- **Bulk import**: iPhone/Safari ZIP, Chrome, Edge, Firefox, Google account and Mac exports in one go, or paste as text. Skips duplicates and updates changed passwords
 - **Change master password**
 - **Mobile friendly**: Add it to the home screen on iPhone and Android
 - **Turkish and English interface** (switch with the 🌐 button), dark theme
